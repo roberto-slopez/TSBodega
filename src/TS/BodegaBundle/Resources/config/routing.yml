@@ -1,0 +1,39 @@
+ts_bodega_homepage:
+    pattern:  /
+    defaults: { _controller: TSBodegaBundle:Default:index }
+
+ts_new_categoria:
+    pattern: /NewCategoria
+    defaults: { _controller: TSBodegaBundle:Categoria:NewCategoria }
+
+ts_edit_categoria:
+    pattern: /EditCategoria
+    defaults: { _controller: TSBodegaBundle:Categoria:EditCategoria }
+
+ts_home_categoria:
+    pattern: /HomeCategoria
+    defaults: { _controller: TSBodegaBundle:Categoria:HomeCategoria }
+
+ts_new_producto:
+    pattern: /NewProducto
+    defaults: { _controller: TSBodegaBundle:Producto:NewProducto }
+
+ts_edit_producto:
+    pattern: /EditProducto
+    defaults: { _controller: TSBodegaBundle:Producto:EditProducto }
+
+ts_home_producto:
+    pattern: /HomeProducto
+    defaults: { _controller: TSBodegaBundle:Producto:HomeProducto }
+
+ts_new_cliente:
+    pattern: /NewCliente
+    defaults: { _controller: TSBodegaBundle:Cliente:NewCliente }
+
+ts_edit_cliente:
+    pattern: /EditCliente
+    defaults: { _controller: TSBodegaBundle:Cliente:EditCliente }
+
+ts_home_cliente:
+    pattern: /HomeCliente
+    defaults: { _controller: TSBodegaBundle:Cliente:HomeCliente }

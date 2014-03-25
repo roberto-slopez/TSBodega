@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database name="default" namespace="TS\BodegaBundle\Model" defaultIdMethod="native">
+    <table name="producto">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="nombre" type="varchar" primaryString="true" size="100" />
+        <column name="precio" type="decimal" />
+        <column name="descripcion" type="longvarchar" />
+         <column name="categoria_id" type="integer" />
+        <foreign-key foreignTable="categoria">
+            <reference local="categoria_id" foreign="id" />
+        </foreign-key>
+    </table>
+    <table name="categoria">
+        <column name="id"  type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="nombre" type="varchar" primaryString="true" size="100" />
+    </table>
+    <table name="usuarios">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="nombre" type="varchar" primaryString="true" size="100" />
+        <column name="password" type="varchar" size="100" />
+    </table>
+    <table name="clientes">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="nombres" type="varchar" size="100" />
+        <column name="apellidos" type="varchar" size="100" />
+        <column name="nombre_completo" type="varchar" size="100" />
+        <column name="dpi" type="varchar" size="100" />
+        <column name="nit" type="varchar" size="100" />
+        <column name="telefono" type="varchar" size="100" />
+        <column name="direccion" type="varchar" size="100" />
+    </table>
+</database>
