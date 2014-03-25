@@ -1,7 +1,44 @@
 {% extends "::base.html.twig" %}
-
-{% block title %}TSBodegaBundle:Producto:HomeCategoria{% endblock %}
-
 {% block body %}
-<h1>Welcome to the Producto:HomeCategoria page</h1>
+<div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
+    <div class="uk-grid">
+        <div class="uk-width-1-2">
+            <a class="uk-button uk-button-primary" href="{{ path('ts_new_categoria') }}">Nuevo</a>
+            <fieldset>
+                <legend>Categorias Disponibles</legend>
+                    <table class="uk-table uk-table-hover uk-table-striped uk-table-condensed" id="example">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nombre</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <td>Categorias</td>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% for dato in datos %}
+                            <tr>
+                                <td>{{dato.id}}</td>
+                                <td>
+                                    <a href="{{ path('ts_edit_categoria', {'id': dato.id }) }}">{{dato.nombre}}</a>
+                                </td>
+                            </tr>
+                             {% endfor %}
+                        </tbody>
+                    </table>
+            </fieldset>
+        </div>
+    </div>
+</div>
 {% endblock %}
+{% block js%}
+<script src="//datatables.net/download/build/nightly/jquery.dataTables.js"></script>
+<script>
+//$(document).ready( function () {
+//  var table = $('#example').DataTable();
+//} );
+</script>
+{% endblock%}

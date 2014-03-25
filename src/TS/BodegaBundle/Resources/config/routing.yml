@@ -7,7 +7,7 @@ ts_new_categoria:
     defaults: { _controller: TSBodegaBundle:Categoria:NewCategoria }
 
 ts_edit_categoria:
-    pattern: /EditCategoria
+    pattern: /EditCategoria/{id}
     defaults: { _controller: TSBodegaBundle:Categoria:EditCategoria }
 
 ts_home_categoria:
