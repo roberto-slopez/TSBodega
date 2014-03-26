@@ -1,7 +1,21 @@
 {% extends "::base.html.twig" %}
-
-{% block title %}TSBodegaBundle:Categoria:NewProducto{% endblock %}
-
 {% block body %}
-<h1>Welcome to the Categoria:NewProducto page</h1>
+<div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
+    <div class="uk-grid">
+        <div class="uk-width-1-2">
+            <form action="{{ path('ts_new_producto') }}" method="post" {{ form_enctype(form) }} class="uk-form uk-width-medium-1-3">
+                <fieldset>
+                <legend>Agregar Nuevo Cliente</legend>
+                <div class="uk-form-row">
+                    {{ form_widget(form) }}
+                </div>
+                <div class="uk-form-row">
+                    <a  class="uk-button uk-button-danger" href="{{ path('ts_home_producto') }}">Retorno</a>
+                    <input type="submit" value="Enviar" class="uk-button uk-button-primary" />
+                </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -19,7 +19,7 @@ ts_new_producto:
     defaults: { _controller: TSBodegaBundle:Producto:NewProducto }
 
 ts_edit_producto:
-    pattern: /EditProducto
+    pattern: /EditProducto/{id}
     defaults: { _controller: TSBodegaBundle:Producto:EditProducto }
 
 ts_home_producto:
@@ -31,7 +31,7 @@ ts_new_cliente:
     defaults: { _controller: TSBodegaBundle:Cliente:NewCliente }
 
 ts_edit_cliente:
-    pattern: /EditCliente
+    pattern: /EditCliente/{id}
     defaults: { _controller: TSBodegaBundle:Cliente:EditCliente }
 
 ts_home_cliente:

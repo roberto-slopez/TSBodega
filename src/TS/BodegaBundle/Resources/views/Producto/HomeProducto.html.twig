@@ -1,7 +1,48 @@
 {% extends "::base.html.twig" %}
-
-{% block title %}TSBodegaBundle:Categoria:HomeProducto{% endblock %}
-
 {% block body %}
-<h1>Welcome to the Categoria:HomeProducto page</h1>
+<div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
+    <div class="uk-grid">
+        <div class="uk-width-1-2">
+            <a class="uk-button uk-button-primary" href="{{ path('ts_new_producto') }}">Nuevo</a>
+            <fieldset>
+                <legend>Clientes Disponibles</legend>
+                    <table class="uk-table uk-table-hover uk-table-striped uk-table-condensed" id="example">
+                        <thead>
+                            <tr>
+                                <th>Nombres</th>
+                                <th>Precio</th>
+                                <th>Descripcion</th>
+                                <th>Categoria</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            {% for dato in datos %}
+                            <tr>
+                                <td>
+                                    <a href="{{ path('ts_edit_producto', {'id': dato.id }) }}">{{dato.nombre}}</a>
+                                </td>
+                                <td>{{dato.descripcion}}</td>
+                                <td>{{dato.precio}}</td>
+                                <td>{{dato.categoria.nombre}}</td>
+                            </tr>
+                             {% endfor %}
+                        </tbody>
+                    </table>
+            </fieldset>
+        </div>
+    </div>
+</div>
 {% endblock %}
+{% block js%}
+<script src="//datatables.net/download/build/nightly/jquery.dataTables.js"></script>
+<script>
+//$(document).ready( function () {
+//  var table = $('#example').DataTable();
+//} );
+</script>
+{% endblock%}

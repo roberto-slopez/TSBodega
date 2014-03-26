@@ -8,17 +8,52 @@ class ClienteController extends Controller
 {
     public function NewClienteAction()
     {
+        $cliente = new \TS\BodegaBundle\Model\Clientes();
+        $form = $this->createForm(new \TS\BodegaBundle\Form\Type\ClientesType(), $cliente);
+
+        $request = $this->getRequest();
+
+        if ('POST' === $request->getMethod()) {
+            $form->handleRequest($request);
+
+            if ($form->isValid()) {
+                $cliente->save();
+
+                return $this->redirect($this->generateUrl('ts_home_cliente'));
+            }
+        }
+        return $this->render('TSBodegaBundle:Cliente:NewCliente.html.twig', array(
+            'form' => $form->createView(),
+        ));
     }
 
-    public function EditClienteAction()
+    public function EditClienteAction($id)
     {
+        $newCliente = \TS\BodegaBundle\Model\ClientesQuery::create()->findOneById($id);
+        $form = $this->createForm(new \TS\BodegaBundle\Form\Type\ClientesType(), $newCliente);
+        $request = $this->getRequest();
+
+        if ('POST' === $request->getMethod()) {
+            $form->handleRequest($request);
+
+            if ($form->isValid()) {
+                $newCliente->save();
+                return $this->redirect($this->generateUrl('ts_home_cliente'));
+            }
+        }
+
+        return $this->render('TSBodegaBundle:Cliente:EditCliente.html.twig', array(
+            'idClient'=> $id,
+            'form' => $form->createView()
+        ));
     }
 
     public function HomeClienteAction()
     {
+        $datos = \TS\BodegaBundle\Model\ClientesQuery::create()->find();
+
         return $this->render('TSBodegaBundle:Cliente:HomeCliente.html.twig',array(
-            'nombre' => '',
+            'datos' => $datos,
         ));
     }
-
 }
