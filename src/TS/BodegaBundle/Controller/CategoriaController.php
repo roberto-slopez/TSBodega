@@ -19,7 +19,10 @@ class CategoriaController extends Controller
 
             if ($form->isValid()) {
                 $categoria->save();
-
+                $this->get('session')->getFlashBag()->add(
+                    'exito',
+                    'Nueva categoria guardada con exito'
+                );
                 return $this->redirect($this->generateUrl('ts_home_categoria'));
             }
         }

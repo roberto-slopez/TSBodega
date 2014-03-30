@@ -1,48 +1,59 @@
 {% extends "::base.html.twig" %}
 {% block body %}
-<div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
-    <div class="uk-grid">
-        <div class="uk-width-1-2">
-            <a class="uk-button uk-button-primary" href="{{ path('ts_new_producto') }}">Nuevo</a>
-            <fieldset>
-                <legend>Clientes Disponibles</legend>
-                    <table class="uk-table uk-table-hover uk-table-striped uk-table-condensed" id="example">
-                        <thead>
-                            <tr>
-                                <th>Nombres</th>
-                                <th>Precio</th>
-                                <th>Descripcion</th>
-                                <th>Categoria</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                            <tr>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                        <tbody>
-                            {% for dato in datos %}
-                            <tr>
-                                <td>
-                                    <a href="{{ path('ts_edit_producto', {'id': dato.id }) }}">{{dato.nombre}}</a>
-                                </td>
-                                <td>{{dato.descripcion}}</td>
-                                <td>{{dato.precio}}</td>
-                                <td>{{dato.categoria.nombre}}</td>
-                            </tr>
-                             {% endfor %}
-                        </tbody>
-                    </table>
-            </fieldset>
-        </div>
-    </div>
+<div class="panel panel-default">
+      <div class="panel-heading">
+          Productos Disponibles
+          <a class="btn btn-primary btn-xs pull-right" href="{{ path('ts_new_producto') }}">Nuevo</a>
+      </div>
+      <div class="panel-body">
+        <table class="table table-bordered" id="datatable">
+        <thead>
+                <tr>
+                    <th>Nombres</th>
+                    <th>Precio</th>
+                    <th>Descripcion</th>
+                    <th>Categoria</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <td></td>
+                </tr>
+            </tfoot>
+            <tbody>
+                {% for dato in datos %}
+                <tr>
+                    <td>
+                        <a href="{{ path('ts_edit_producto', {'id': dato.id }) }}">{{dato.nombre}}</a>
+                    </td>
+                    <td>{{dato.descripcion}}</td>
+                    <td>{{dato.precio}}</td>
+                    <td>{{dato.categoria.nombre}}</td>
+                </tr>
+                 {% endfor %}
+            </tbody>
+        </table>
+      </div>
 </div>
-{% endblock %}
-{% block js%}
-<script src="//datatables.net/download/build/nightly/jquery.dataTables.js"></script>
-<script>
-//$(document).ready( function () {
-//  var table = $('#example').DataTable();
-//} );
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $('#datatable').dataTable({
+        "sPaginationType": "bs_normal"
+    });	
+    $('#datatable').each(function(){
+        var datatable = $(this);
+        // SEARCH - Add the placeholder for Search and Turn this into in-line form control
+        var search_input = datatable.closest('.dataTables_wrapper').find('div[id$=_filter] input');
+        search_input.attr('placeholder', 'Search');
+        search_input.addClass('form-control input-sm');
+        // LENGTH - Inline-Form control
+        var length_sel = datatable.closest('.dataTables_wrapper').find('div[id$=_length] select');
+        length_sel.addClass('form-control input-sm');
+        datatable.bind('page', function(e){
+            window.console && console.log('pagination event:', e); //this event must be fired whenever you paginate
+        });
+    });
+});
 </script>
-{% endblock%}
+{% endblock %}

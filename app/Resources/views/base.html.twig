@@ -1,92 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
     <head>
         <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Cronos</title>
-        <!-- If you are using CSS version, only link these 2 files, you may add app.css to use for your overrides if you like. -->
-        {% block stylesheets %}
-            <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/uikit.docs.min.css') }}">
-        {% endblock %}
-          <style type="text/css" media="all">
-        /* fix rtl for demo */
-        .chosen-rtl .chosen-drop { left: -9000px; }
-          </style>
-        {% block chosen %}
-            <link rel="stylesheet" href="{{ asset('/bundles/tsbodega/chosen/docsupport/prism.css') }}">
-            <link rel="stylesheet" href="{{ asset('/bundles/tsbodega/chosen/chosen.css') }}">
-        {% endblock chosen%}
-        {% block javascripts %}
-        <script src="{{ asset('bundles/tsbodega/vendor/jquery.js') }}" type="text/javascript"></script>
-        <script src="{{ asset('bundles/tsbodega/js/uikit.min.js') }}" type="text/javascript"></script>
-        {% endblock javascripts %}
+        <meta name="description" content="">
+        <meta name="author" content="">
         <link rel="shortcut icon" href="{{ asset('bundles/tsbodega/images/favicon.ico') }}" type="image/x-icon">
-        <link rel="apple-touch-icon-precomposed" href="{{ asset('bundles/tsbodega/images/apple-touch-icon.png') }}">
-    </head>
-    <body>
-        {% block menu %}
-        <div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
-            <nav class="uk-navbar uk-margin-large-bottom">
-                <a class="uk-navbar-brand uk-hidden-small" href="{{ path('ts_bodega_homepage') }}">Cronos</a>
-                <ul class="uk-navbar-nav uk-hidden-small">
-                    <li>
-                        <a href="">Inicio</a>
-                    </li>
-                    <li>
-                        <a href="{{ path('ts_home_producto') }}">Productos</a>
-                    </li>
-                    <li>
-                        <a href="{{ path('ts_home_categoria') }}">Categorias</a>
-                    </li>
-                    <li>
-                        <a href="{{ path('ts_home_cliente') }}">Clientes</a>
-                    </li>
-                    <li>
-                        <a href="#">Ventas</a>
-                    </li>
-                    <li>
-                        <a href="#">Compras</a>
-                    </li>
-                    <li>
-                        <a href="#">Reportes</a>
-                    </li>
-                </ul>
-                <a href="#offcanvas" class="uk-navbar-toggle uk-visible-small" data-uk-offcanvas></a>
-                <div class="uk-navbar-brand uk-navbar-center uk-visible-small">Brand</div>
-            </nav>
-        </div>
+        <title>Cronos</title>
+        <!-- Bootstrap core CSS -->
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/navbar-fixed-top.css') }}">
+        <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/datatables.css') }}">
+    {% endblock %}
+        <style type="text/css" media="all">
+            /* fix rtl for demo */
+            .chosen-rtl .chosen-drop { left: -9000px; }
+        </style>
+    {% block chosen %}
+        <link rel="stylesheet" href="{{ asset('/bundles/tsbodega/chosen/docsupport/prism.css') }}">
+        <link rel="stylesheet" href="{{ asset('/bundles/tsbodega/chosen/chosen.css') }}">
+    {% endblock chosen%}
+    {% block javascripts %}
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script> 
+        <script src="{{ asset('bundles/tsbodega/js/bootstrap.min.js') }}" type="text/javascript"></script>
+    <!--<script src="{{ asset('bundles/tsbodega/vendor/jquery.js') }}" type="text/javascript"></script> -->
+        <script src="{{ asset('bundles/tsbodega/js/jquery.dataTables.min.js') }}" type="text/javascript"></script>
+        <script src="{{ asset('bundles/tsbodega/js/datatables.js') }}" type="text/javascript"></script>
+    {% endblock javascripts %}
+        <!-- Custom styles for this template -->
 
-        <div id="offcanvas" class="uk-offcanvas">
-            <div class="uk-offcanvas-bar">
-                <ul class="uk-nav uk-nav-offcanvas">
-                    <li class="uk-active">
-                        <a href="">Frontpage</a>
-                    </li>
-                    <li>
-                        <a href="">Portfolio</a>
-                    </li>
-                    <li>
-                        <a href="">Blog</a>
-                    </li>
-                    <li>
-                        <a href="">Documentation</a>
-                    </li>
-                    <li>
-                        <a href="">Contact</a>
-                    </li>
-                    <li>
-                        <a href="">Login</a>
-                    </li>
-                </ul>
+        <!-- Just for debugging purposes. Don't actually copy this line! -->
+        <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+          <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <!-- Fixed navbar -->
+    {% block menu%}
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="">TSBodega</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a href="{{ path('ts_bodega_homepage') }}">Inicio</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('ts_home_producto') }}">Productos</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('ts_home_categoria') }}">Categorias</a>
+                        </li>
+                        <li>
+                            <a href="{{ path('ts_home_cliente') }}">Clientes</a>
+                        </li>
+                        <li>
+                            <a href="#">Ventas</a>
+                        </li>
+                        <li>
+                            <a href="#">Compras</a>
+                        </li>
+                        <li>
+                            <a href="#">Reportes</a>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Action</a></li>
+                                <li><a href="#">Another action</a></li>
+                                <li><a href="#">Something else here</a></li>
+                                <li class="divider"></li>
+                                <li class="dropdown-header">Nav header</li>
+                                <li><a href="#">Separated link</a></li>
+                                <li><a href="#">One more separated link</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="{{ path('fos_user_security_logout') }}">
+                  {{ 'layout.logged_in_as'|trans({'%username%': app.user.username}, 'FOSUserBundle') }} |
+                {{ 'layout.logout'|trans({}, 'FOSUserBundle') }}
+                            </a>
+                        </li>
+                    </ul>
+                </div><!--/.nav-collapse -->
             </div>
         </div>
-        {% endblock menu%}
+    {% endblock menu%}
+        <div class="container">
+    {% block avisos%}
+        {% for flashMessage in app.session.flashbag.get('exito') %}
+            <div class="alert alert-success fade in">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <strong>Exito!</strong> {{ flashMessage }}
+            </div>
+        {% endfor%}
+        {% for flashMessage in app.session.flashbag.get('aviso') %}
+            <div class="alert alert-warning fade in">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <strong>Aviso!</strong> {{ flashMessage }}
+            </div>
+        {% endfor%}
+        {% for flashMessage in app.session.flashbag.get('error') %}
+            <div class="alert alert-danger fade in">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <strong>Error!</strong> {{ flashMessage }}
+            </div>
+        {% endfor%}
+    {%endblock avisos%}
+    {% block body %}
+    {% endblock %}
+            <!-- Main component for a primary marketing message or call to action -->
+        </div> <!-- /container -->
+    {% block foot %}
+    {% endblock foot%}
 
-        {% block body %}
-
-        {% endblock %}
-
-        {% block foot %}{% endblock %}
-        {% block js %}{% endblock js %}
+        <!-- Bootstrap core JavaScript
+        ================================================== -->
+    {% block jsExtras %}
+    {% endblock jsExtras %}
+        <!-- Placed at the end of the document so the pages load faster-->
     </body>
 </html>
