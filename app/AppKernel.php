@@ -18,6 +18,7 @@ class AppKernel extends Kernel
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new Propel\PropelBundle\PropelBundle(),
             new FOS\UserBundle\FOSUserBundle(),
+            //new Sonata\PropelAdminBundle\SonataPropelAdminBundle(),
             new TS\BodegaBundle\TSBodegaBundle(),
         );
 

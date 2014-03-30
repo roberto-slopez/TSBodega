@@ -8,6 +8,14 @@
         {% block stylesheets %}
             <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/uikit.docs.min.css') }}">
         {% endblock %}
+          <style type="text/css" media="all">
+        /* fix rtl for demo */
+        .chosen-rtl .chosen-drop { left: -9000px; }
+          </style>
+        {% block chosen %}
+            <link rel="stylesheet" href="{{ asset('/bundles/tsbodega/chosen/docsupport/prism.css') }}">
+            <link rel="stylesheet" href="{{ asset('/bundles/tsbodega/chosen/chosen.css') }}">
+        {% endblock chosen%}
         {% block javascripts %}
         <script src="{{ asset('bundles/tsbodega/vendor/jquery.js') }}" type="text/javascript"></script>
         <script src="{{ asset('bundles/tsbodega/js/uikit.min.js') }}" type="text/javascript"></script>

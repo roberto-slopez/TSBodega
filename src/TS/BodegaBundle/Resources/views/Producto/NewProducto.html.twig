@@ -1,20 +1,53 @@
 {% extends "::base.html.twig" %}
+
 {% block body %}
 <div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
     <div class="uk-grid">
         <div class="uk-width-1-2">
             <form action="{{ path('ts_new_producto') }}" method="post" {{ form_enctype(form) }} class="uk-form uk-width-medium-1-3">
+                {{ form_start(form) }}
+                {{ form_errors(form) }}
                 <fieldset>
-                <legend>Agregar Nuevo Cliente</legend>
+                <legend>Agregar Nuevo Producto</legend>
                 <div class="uk-form-row">
-                    {{ form_widget(form) }}
+                    {{ form_widget(form._token) }}
+                    {{ form_label(form.nombre, 'Producto:') }}
+                    {{ form_widget(form.nombre) }}
+                </div>
+                <div class="uk-form-row">
+                    {{ form_label(form.precio, 'Precio:') }}
+                    {{ form_widget(form.precio) }}
+                </div>
+                <div class="uk-form-row">
+                    {{ form_label(form.descripcion, 'Descripcion:') }}
+                    {{ form_widget(form.descripcion) }}
+                </div>
+                <div class="uk-form-row">
+                    {{ form_label(form.categoria, 'Elije Categoria:') }}
+                    {{ form_widget(form.categoria, { 'attr': {'class': 'chosen-select'} }) }}
                 </div>
                 <div class="uk-form-row">
                     <a  class="uk-button uk-button-danger" href="{{ path('ts_home_producto') }}">Retorno</a>
                     <input type="submit" value="Enviar" class="uk-button uk-button-primary" />
                 </div>
                 </fieldset>
+                <script src="{{ asset('/bundles/tsbodega/chosen/chosen.jquery.js') }}" type="text/javascript"></script>
+                <script src="{{ asset('/bundles/tsbodega/chosen/docsupport/prism.js') }}" type="text/javascript" charset="utf-8"></script>
+                <script type="text/javascript">
+                    var config = {
+                      '.chosen-select'           : {},
+                      '.chosen-select-deselect'  : {allow_single_deselect:true},
+                      '.chosen-select-no-single' : {disable_search_threshold:10},
+                      '.chosen-select-no-results': {no_results_text:'Oops, nothing found!'},
+                      '.chosen-select-width'     : {width:"95%"}
+                    }
+                    for (var selector in config) {
+                      $(selector).chosen(config[selector]);
+                    }
+                  </script>
             </form>
+            {{ form_end(form) }}
+            {{ form(form) }}
         </div>
     </div>
 </div>
