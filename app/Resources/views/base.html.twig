@@ -7,10 +7,11 @@
         <meta name="description" content="">
         <meta name="author" content="">
         <link rel="shortcut icon" href="{{ asset('bundles/tsbodega/images/favicon.ico') }}" type="image/x-icon">
-        <title>Cronos</title>
+        <title>TSBodega</title>
         <!-- Bootstrap core CSS -->
     {% block stylesheets %}
         <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/bootstrap-theme.min.css') }}">
         <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/navbar-fixed-top.css') }}">
         <link rel="stylesheet" href="{{ asset('bundles/tsbodega/css/datatables.css') }}">
     {% endblock %}
@@ -61,35 +62,36 @@
                         <li>
                             <a href="{{ path('ts_bodega_homepage') }}">Inicio</a>
                         </li>
-                        <li>
-                            <a href="{{ path('ts_home_producto') }}">Productos</a>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Catalogos<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="{{ path('ts_home_producto') }}">Productos</a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('ts_home_categoria') }}">Categorias</a>
+                                </li>
+                                <li>
+                                    <a href="{{ path('ts_home_cliente') }}">Clientes</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li class="dropdown-header"><a href="#">No Disponible</a></li>
+                                <li class="dropdown-header"><a href="#">No Disponible</a></li>
+                            </ul>
                         </li>
-                        <li>
-                            <a href="{{ path('ts_home_categoria') }}">Categorias</a>
-                        </li>
-                        <li>
-                            <a href="{{ path('ts_home_cliente') }}">Clientes</a>
-                        </li>
-                        <li>
-                            <a href="#">Ventas</a>
-                        </li>
-                        <li>
-                            <a href="#">Compras</a>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Movimientos<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="#">Ventas</a>
+                                </li>
+                                <li>
+                                    <a href="#">Compras</a>
+                                </li>
+                            </ul>
                         </li>
                         <li>
                             <a href="#">Reportes</a>
-                        </li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#">Action</a></li>
-                                <li><a href="#">Another action</a></li>
-                                <li><a href="#">Something else here</a></li>
-                                <li class="divider"></li>
-                                <li class="dropdown-header">Nav header</li>
-                                <li><a href="#">Separated link</a></li>
-                                <li><a href="#">One more separated link</a></li>
-                            </ul>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">

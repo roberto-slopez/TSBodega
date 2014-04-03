@@ -29,4 +29,24 @@
         <column name="telefono" type="varchar" size="100" />
         <column name="direccion" type="varchar" size="100" />
     </table>
+    <table name="proveedor">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="nombre" type="varchar" primaryString="true" size="100" />
+        <column name="encargado" type="varchar" size="100" />
+        <column name="nit" type="varchar" size="80" />
+        <column name="dpi" type="varchar" size="80" />
+        <column name="direccion" type="varchar" size="150" />
+        <column name="telefono" type="varchar" size="80" />
+        <column name="movil" type="varchar" size="80" />
+    </table>
+    <table name="inventario">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="producto" type="varchar" primaryString="true" size="100" />
+        <column name="proveedor" type="varchar" size="150" />
+        <column name="fecha" type="date" size="80" />
+        <column name="stock" type="varchar" size="100" />
+        <column name="neto" type="decimal" size="80" />
+        <column name="" type="varchar" size="80" />
+    </table>
+    
 </database>
