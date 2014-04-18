@@ -53,6 +53,12 @@ abstract class BaseCategoria extends BaseObject implements Persistent
     protected $nombre;
 
     /**
+     * The value for the descripcion field.
+     * @var        string
+     */
+    protected $descripcion;
+
+    /**
      * @var        PropelObjectCollection|Producto[] Collection to store aggregation of Producto objects.
      */
     protected $collProductos;
@@ -107,6 +113,17 @@ abstract class BaseCategoria extends BaseObject implements Persistent
     }
 
     /**
+     * Get the [descripcion] column value.
+     *
+     * @return string
+     */
+    public function getDescripcion()
+    {
+
+        return $this->descripcion;
+    }
+
+    /**
      * Set the value of [id] column.
      *
      * @param  int $v new value
@@ -149,6 +166,27 @@ abstract class BaseCategoria extends BaseObject implements Persistent
     } // setNombre()
 
     /**
+     * Set the value of [descripcion] column.
+     *
+     * @param  string $v new value
+     * @return Categoria The current object (for fluent API support)
+     */
+    public function setDescripcion($v)
+    {
+        if ($v !== null) {
+            $v = (string) $v;
+        }
+
+        if ($this->descripcion !== $v) {
+            $this->descripcion = $v;
+            $this->modifiedColumns[] = CategoriaPeer::DESCRIPCION;
+        }
+
+
+        return $this;
+    } // setDescripcion()
+
+    /**
      * Indicates whether the columns in this object are only set to default values.
      *
      * This method can be used in conjunction with isModified() to indicate whether an object is both
@@ -182,6 +220,7 @@ abstract class BaseCategoria extends BaseObject implements Persistent
 
             $this->id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
             $this->nombre = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
+            $this->descripcion = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -191,7 +230,7 @@ abstract class BaseCategoria extends BaseObject implements Persistent
             }
             $this->postHydrate($row, $startcol, $rehydrate);
 
-            return $startcol + 2; // 2 = CategoriaPeer::NUM_HYDRATE_COLUMNS.
+            return $startcol + 3; // 3 = CategoriaPeer::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
             throw new PropelException("Error populating Categoria object", $e);
@@ -429,6 +468,9 @@ abstract class BaseCategoria extends BaseObject implements Persistent
         if ($this->isColumnModified(CategoriaPeer::NOMBRE)) {
             $modifiedColumns[':p' . $index++]  = '`nombre`';
         }
+        if ($this->isColumnModified(CategoriaPeer::DESCRIPCION)) {
+            $modifiedColumns[':p' . $index++]  = '`descripcion`';
+        }
 
         $sql = sprintf(
             'INSERT INTO `categoria` (%s) VALUES (%s)',
@@ -445,6 +487,9 @@ abstract class BaseCategoria extends BaseObject implements Persistent
                         break;
                     case '`nombre`':
                         $stmt->bindValue($identifier, $this->nombre, PDO::PARAM_STR);
+                        break;
+                    case '`descripcion`':
+                        $stmt->bindValue($identifier, $this->descripcion, PDO::PARAM_STR);
                         break;
                 }
             }
@@ -594,6 +639,9 @@ abstract class BaseCategoria extends BaseObject implements Persistent
             case 1:
                 return $this->getNombre();
                 break;
+            case 2:
+                return $this->getDescripcion();
+                break;
             default:
                 return null;
                 break;
@@ -625,6 +673,7 @@ abstract class BaseCategoria extends BaseObject implements Persistent
         $result = array(
             $keys[0] => $this->getId(),
             $keys[1] => $this->getNombre(),
+            $keys[2] => $this->getDescripcion(),
         );
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
@@ -675,6 +724,9 @@ abstract class BaseCategoria extends BaseObject implements Persistent
             case 1:
                 $this->setNombre($value);
                 break;
+            case 2:
+                $this->setDescripcion($value);
+                break;
         } // switch()
     }
 
@@ -701,6 +753,7 @@ abstract class BaseCategoria extends BaseObject implements Persistent
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
         if (array_key_exists($keys[1], $arr)) $this->setNombre($arr[$keys[1]]);
+        if (array_key_exists($keys[2], $arr)) $this->setDescripcion($arr[$keys[2]]);
     }
 
     /**
@@ -714,6 +767,7 @@ abstract class BaseCategoria extends BaseObject implements Persistent
 
         if ($this->isColumnModified(CategoriaPeer::ID)) $criteria->add(CategoriaPeer::ID, $this->id);
         if ($this->isColumnModified(CategoriaPeer::NOMBRE)) $criteria->add(CategoriaPeer::NOMBRE, $this->nombre);
+        if ($this->isColumnModified(CategoriaPeer::DESCRIPCION)) $criteria->add(CategoriaPeer::DESCRIPCION, $this->descripcion);
 
         return $criteria;
     }
@@ -778,6 +832,7 @@ abstract class BaseCategoria extends BaseObject implements Persistent
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
         $copyObj->setNombre($this->getNombre());
+        $copyObj->setDescripcion($this->getDescripcion());
 
         if ($deepCopy && !$this->startCopy) {
             // important: temporarily setNew(false) because this affects the behavior of
@@ -1090,6 +1145,7 @@ abstract class BaseCategoria extends BaseObject implements Persistent
     {
         $this->id = null;
         $this->nombre = null;
+        $this->descripcion = null;
         $this->alreadyInSave = false;
         $this->alreadyInValidation = false;
         $this->alreadyInClearAllReferencesDeep = false;

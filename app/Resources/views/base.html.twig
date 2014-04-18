@@ -46,65 +46,7 @@
 
         <!-- Fixed navbar -->
     {% block menu%}
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="">TSBodega</a>
-                </div>
-                <div class="navbar-collapse collapse">
-                    <ul class="nav navbar-nav">
-                        <li>
-                            <a href="{{ path('ts_bodega_homepage') }}">Inicio</a>
-                        </li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Catalogos<b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a href="{{ path('ts_home_producto') }}">Productos</a>
-                                </li>
-                                <li>
-                                    <a href="{{ path('ts_home_categoria') }}">Categorias</a>
-                                </li>
-                                <li>
-                                    <a href="{{ path('ts_home_cliente') }}">Clientes</a>
-                                </li>
-                                <li class="divider"></li>
-                                <li class="dropdown-header"><a href="#">No Disponible</a></li>
-                                <li class="dropdown-header"><a href="#">No Disponible</a></li>
-                            </ul>
-                        </li>
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Movimientos<b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a href="#">Ventas</a>
-                                </li>
-                                <li>
-                                    <a href="#">Compras</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a href="#">Reportes</a>
-                        </li>
-                    </ul>
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a href="{{ path('fos_user_security_logout') }}">
-                  {{ 'layout.logged_in_as'|trans({'%username%': app.user.username}, 'FOSUserBundle') }} |
-                {{ 'layout.logout'|trans({}, 'FOSUserBundle') }}
-                            </a>
-                        </li>
-                    </ul>
-                </div><!--/.nav-collapse -->
-            </div>
-        </div>
+        {% include '::navBar.html.twig' %}
     {% endblock menu%}
         <div class="container">
     {% block avisos%}
@@ -132,12 +74,28 @@
             <!-- Main component for a primary marketing message or call to action -->
         </div> <!-- /container -->
     {% block foot %}
+    <div class="footer">
+      <div class="container">
+          <p class="text-muted">&copy; TS {{ ("now"|date('Y') > 2010) ? '2010 - ' ~ "now"|date('Y') : '2010' }}</p>
+      </div>
+    </div>
     {% endblock foot%}
 
         <!-- Bootstrap core JavaScript
         ================================================== -->
     {% block jsExtras %}
     {% endblock jsExtras %}
+    {% block cssExtras %}
+        <style type="text/css">
+          /* Override some defaults */
+         body {
+            background-color: #4E535B;
+            //background-color: #DCDDDF;
+            //background-color: #777;
+            //background-color: #eee;
+          }
+        </style>
+    {% endblock cssExtras %}
         <!-- Placed at the end of the document so the pages load faster-->
     </body>
 </html>

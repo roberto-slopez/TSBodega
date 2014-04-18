@@ -18,7 +18,10 @@ class ClienteController extends Controller
 
             if ($form->isValid()) {
                 $cliente->save();
-
+                $this->get('session')->getFlashBag()->add(
+                    'exito',
+                    'Nuevo cliente guardado con exito'
+                );
                 return $this->redirect($this->generateUrl('ts_home_cliente'));
             }
         }
@@ -38,6 +41,10 @@ class ClienteController extends Controller
 
             if ($form->isValid()) {
                 $newCliente->save();
+                $this->get('session')->getFlashBag()->add(
+                    'exito',
+                    'El Cliente: '.$newCliente->getNombreCompleto().' se actualizo con exito'
+                );
                 return $this->redirect($this->generateUrl('ts_home_cliente'));
             }
         }

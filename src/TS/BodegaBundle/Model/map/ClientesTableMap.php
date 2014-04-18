@@ -58,6 +58,8 @@ class ClientesTableMap extends TableMap
      */
     public function buildRelations()
     {
+        $this->addRelation('Ventas', 'TS\\BodegaBundle\\Model\\Ventas', RelationMap::ONE_TO_MANY, array('id' => 'clientes_id', ), null, null, 'Ventass');
+        $this->addRelation('Factura', 'TS\\BodegaBundle\\Model\\Factura', RelationMap::ONE_TO_MANY, array('id' => 'clientes_id', ), null, null, 'Facturas');
     } // buildRelations()
 
 } // ClientesTableMap

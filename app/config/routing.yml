@@ -1,3 +1,8 @@
+TSBodegaBundle_admin_ts_bodega_bundle_TS:
+    resource: "@TSBodegaBundle/Controller/TS/"
+    type:     admingenerator
+    prefix:   /admin/ts_bodega_bundle/TS
+
 ts_bodega:
     resource: "@TSBodegaBundle/Resources/config/routing.yml"
     prefix:   /

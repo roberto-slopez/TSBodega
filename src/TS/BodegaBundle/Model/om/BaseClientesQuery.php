@@ -5,14 +5,18 @@ namespace TS\BodegaBundle\Model\om;
 use \Criteria;
 use \Exception;
 use \ModelCriteria;
+use \ModelJoin;
 use \PDO;
 use \Propel;
+use \PropelCollection;
 use \PropelException;
 use \PropelObjectCollection;
 use \PropelPDO;
 use TS\BodegaBundle\Model\Clientes;
 use TS\BodegaBundle\Model\ClientesPeer;
 use TS\BodegaBundle\Model\ClientesQuery;
+use TS\BodegaBundle\Model\Factura;
+use TS\BodegaBundle\Model\Ventas;
 
 /**
  * @method ClientesQuery orderById($order = Criteria::ASC) Order by the id column
@@ -36,6 +40,14 @@ use TS\BodegaBundle\Model\ClientesQuery;
  * @method ClientesQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method ClientesQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
  * @method ClientesQuery innerJoin($relation) Adds a INNER JOIN clause to the query
+ *
+ * @method ClientesQuery leftJoinVentas($relationAlias = null) Adds a LEFT JOIN clause to the query using the Ventas relation
+ * @method ClientesQuery rightJoinVentas($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Ventas relation
+ * @method ClientesQuery innerJoinVentas($relationAlias = null) Adds a INNER JOIN clause to the query using the Ventas relation
+ *
+ * @method ClientesQuery leftJoinFactura($relationAlias = null) Adds a LEFT JOIN clause to the query using the Factura relation
+ * @method ClientesQuery rightJoinFactura($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Factura relation
+ * @method ClientesQuery innerJoinFactura($relationAlias = null) Adds a INNER JOIN clause to the query using the Factura relation
  *
  * @method Clientes findOne(PropelPDO $con = null) Return the first Clientes matching the query
  * @method Clientes findOneOrCreate(PropelPDO $con = null) Return the first Clientes matching the query, or a new Clientes object populated from the query conditions when no match is found
@@ -493,6 +505,154 @@ abstract class BaseClientesQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(ClientesPeer::DIRECCION, $direccion, $comparison);
+    }
+
+    /**
+     * Filter the query by a related Ventas object
+     *
+     * @param   Ventas|PropelObjectCollection $ventas  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 ClientesQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByVentas($ventas, $comparison = null)
+    {
+        if ($ventas instanceof Ventas) {
+            return $this
+                ->addUsingAlias(ClientesPeer::ID, $ventas->getClientesId(), $comparison);
+        } elseif ($ventas instanceof PropelObjectCollection) {
+            return $this
+                ->useVentasQuery()
+                ->filterByPrimaryKeys($ventas->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByVentas() only accepts arguments of type Ventas or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Ventas relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return ClientesQuery The current query, for fluid interface
+     */
+    public function joinVentas($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Ventas');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Ventas');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Ventas relation Ventas object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \TS\BodegaBundle\Model\VentasQuery A secondary query class using the current class as primary query
+     */
+    public function useVentasQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinVentas($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Ventas', '\TS\BodegaBundle\Model\VentasQuery');
+    }
+
+    /**
+     * Filter the query by a related Factura object
+     *
+     * @param   Factura|PropelObjectCollection $factura  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 ClientesQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByFactura($factura, $comparison = null)
+    {
+        if ($factura instanceof Factura) {
+            return $this
+                ->addUsingAlias(ClientesPeer::ID, $factura->getClientesId(), $comparison);
+        } elseif ($factura instanceof PropelObjectCollection) {
+            return $this
+                ->useFacturaQuery()
+                ->filterByPrimaryKeys($factura->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByFactura() only accepts arguments of type Factura or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Factura relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return ClientesQuery The current query, for fluid interface
+     */
+    public function joinFactura($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Factura');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Factura');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Factura relation Factura object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \TS\BodegaBundle\Model\FacturaQuery A secondary query class using the current class as primary query
+     */
+    public function useFacturaQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinFactura($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Factura', '\TS\BodegaBundle\Model\FacturaQuery');
     }
 
     /**

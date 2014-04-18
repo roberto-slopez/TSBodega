@@ -29,19 +29,22 @@ abstract class BaseCategoriaPeer
     const TM_CLASS = 'TS\\BodegaBundle\\Model\\map\\CategoriaTableMap';
 
     /** The total number of columns. */
-    const NUM_COLUMNS = 2;
+    const NUM_COLUMNS = 3;
 
     /** The number of lazy-loaded columns. */
     const NUM_LAZY_LOAD_COLUMNS = 0;
 
     /** The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS) */
-    const NUM_HYDRATE_COLUMNS = 2;
+    const NUM_HYDRATE_COLUMNS = 3;
 
     /** the column name for the id field */
     const ID = 'categoria.id';
 
     /** the column name for the nombre field */
     const NOMBRE = 'categoria.nombre';
+
+    /** the column name for the descripcion field */
+    const DESCRIPCION = 'categoria.descripcion';
 
     /** The default string format for model objects of the related table **/
     const DEFAULT_STRING_FORMAT = 'YAML';
@@ -62,12 +65,12 @@ abstract class BaseCategoriaPeer
      * e.g. CategoriaPeer::$fieldNames[CategoriaPeer::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        BasePeer::TYPE_PHPNAME => array ('Id', 'Nombre', ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'nombre', ),
-        BasePeer::TYPE_COLNAME => array (CategoriaPeer::ID, CategoriaPeer::NOMBRE, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'NOMBRE', ),
-        BasePeer::TYPE_FIELDNAME => array ('id', 'nombre', ),
-        BasePeer::TYPE_NUM => array (0, 1, )
+        BasePeer::TYPE_PHPNAME => array ('Id', 'Nombre', 'Descripcion', ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'nombre', 'descripcion', ),
+        BasePeer::TYPE_COLNAME => array (CategoriaPeer::ID, CategoriaPeer::NOMBRE, CategoriaPeer::DESCRIPCION, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'NOMBRE', 'DESCRIPCION', ),
+        BasePeer::TYPE_FIELDNAME => array ('id', 'nombre', 'descripcion', ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, )
     );
 
     /**
@@ -77,12 +80,12 @@ abstract class BaseCategoriaPeer
      * e.g. CategoriaPeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Nombre' => 1, ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'nombre' => 1, ),
-        BasePeer::TYPE_COLNAME => array (CategoriaPeer::ID => 0, CategoriaPeer::NOMBRE => 1, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'NOMBRE' => 1, ),
-        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'nombre' => 1, ),
-        BasePeer::TYPE_NUM => array (0, 1, )
+        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Nombre' => 1, 'Descripcion' => 2, ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'nombre' => 1, 'descripcion' => 2, ),
+        BasePeer::TYPE_COLNAME => array (CategoriaPeer::ID => 0, CategoriaPeer::NOMBRE => 1, CategoriaPeer::DESCRIPCION => 2, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'NOMBRE' => 1, 'DESCRIPCION' => 2, ),
+        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'nombre' => 1, 'descripcion' => 2, ),
+        BasePeer::TYPE_NUM => array (0, 1, 2, )
     );
 
     /**
@@ -158,9 +161,11 @@ abstract class BaseCategoriaPeer
         if (null === $alias) {
             $criteria->addSelectColumn(CategoriaPeer::ID);
             $criteria->addSelectColumn(CategoriaPeer::NOMBRE);
+            $criteria->addSelectColumn(CategoriaPeer::DESCRIPCION);
         } else {
             $criteria->addSelectColumn($alias . '.id');
             $criteria->addSelectColumn($alias . '.nombre');
+            $criteria->addSelectColumn($alias . '.descripcion');
         }
     }
 

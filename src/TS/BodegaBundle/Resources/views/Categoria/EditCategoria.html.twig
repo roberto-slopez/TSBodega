@@ -1,19 +1,33 @@
 {% extends "::base.html.twig" %}
 
 {% block body %}
-<form action="{{ path('ts_edit_categoria', {'id': idCat }) }}" method="post" {{ form_enctype(form) }} fole="form">
-    <fieldset>
-    <legend>Actualizar Categoria</legend>
-    <div class="form-group">
-        {{ form_widget(form._token) }}
-        {{ form_label(form.nombre, 'Categoria:') }}
-        {{ form_widget(form.nombre, { 'attr': {'class': 'form-control'} }) }}
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3>Editar Categoria</h3>
+            </div>
+            <div class="panel-body">
+                <form action="{{ path('ts_edit_categoria', {'id': idCat }) }}" method="post" {{ form_enctype(form) }} fole="form">
+                    <fieldset>
+                        <legend>Actualizar Categoria</legend>
+                        <div class="form-group">
+                            {{ form_widget(form._token) }}
+                            {{ form_label(form.nombre, 'Nombre:') }}
+                            {{ form_widget(form.nombre, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.descripcion, 'Descripcion:') }}
+                            {{ form_widget(form.descripcion, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                        <div class="form-group">
+                            <a  class="btn btn-danger btn-sm" href="{{ path('ts_home_categoria') }}">Retorno</a>
+                            <input type="submit" value="Actualizar" class="btn btn-primary btn-sm" />
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <a  class="btn btn-danger btn-sm" href="{{ path('ts_home_categoria') }}">Retorno</a>
-        <input type="submit" value="Actualizar" class="btn btn-primary btn-sm" />
-    </div>
-    </fieldset>
-</form>
-
+</div>
 {% endblock %}

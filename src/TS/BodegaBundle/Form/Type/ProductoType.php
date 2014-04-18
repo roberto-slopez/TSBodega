@@ -18,7 +18,7 @@ class ProductoType extends BaseAbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('nombre');
-        $builder->add('precio');
+        $builder->add('precio_unitario');
         $builder->add('descripcion');
         $builder->add('categoria', 'model', array(
                'class' => '\TS\BodegaBundle\Model\Categoria',

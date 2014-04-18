@@ -44,8 +44,8 @@ abstract class BaseProductoPeer
     /** the column name for the nombre field */
     const NOMBRE = 'producto.nombre';
 
-    /** the column name for the precio field */
-    const PRECIO = 'producto.precio';
+    /** the column name for the precio_unitario field */
+    const PRECIO_UNITARIO = 'producto.precio_unitario';
 
     /** the column name for the descripcion field */
     const DESCRIPCION = 'producto.descripcion';
@@ -72,11 +72,11 @@ abstract class BaseProductoPeer
      * e.g. ProductoPeer::$fieldNames[ProductoPeer::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        BasePeer::TYPE_PHPNAME => array ('Id', 'Nombre', 'Precio', 'Descripcion', 'CategoriaId', ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'nombre', 'precio', 'descripcion', 'categoriaId', ),
-        BasePeer::TYPE_COLNAME => array (ProductoPeer::ID, ProductoPeer::NOMBRE, ProductoPeer::PRECIO, ProductoPeer::DESCRIPCION, ProductoPeer::CATEGORIA_ID, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'NOMBRE', 'PRECIO', 'DESCRIPCION', 'CATEGORIA_ID', ),
-        BasePeer::TYPE_FIELDNAME => array ('id', 'nombre', 'precio', 'descripcion', 'categoria_id', ),
+        BasePeer::TYPE_PHPNAME => array ('Id', 'Nombre', 'PrecioUnitario', 'Descripcion', 'CategoriaId', ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id', 'nombre', 'precioUnitario', 'descripcion', 'categoriaId', ),
+        BasePeer::TYPE_COLNAME => array (ProductoPeer::ID, ProductoPeer::NOMBRE, ProductoPeer::PRECIO_UNITARIO, ProductoPeer::DESCRIPCION, ProductoPeer::CATEGORIA_ID, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID', 'NOMBRE', 'PRECIO_UNITARIO', 'DESCRIPCION', 'CATEGORIA_ID', ),
+        BasePeer::TYPE_FIELDNAME => array ('id', 'nombre', 'precio_unitario', 'descripcion', 'categoria_id', ),
         BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
     );
 
@@ -87,11 +87,11 @@ abstract class BaseProductoPeer
      * e.g. ProductoPeer::$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Nombre' => 1, 'Precio' => 2, 'Descripcion' => 3, 'CategoriaId' => 4, ),
-        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'nombre' => 1, 'precio' => 2, 'descripcion' => 3, 'categoriaId' => 4, ),
-        BasePeer::TYPE_COLNAME => array (ProductoPeer::ID => 0, ProductoPeer::NOMBRE => 1, ProductoPeer::PRECIO => 2, ProductoPeer::DESCRIPCION => 3, ProductoPeer::CATEGORIA_ID => 4, ),
-        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'NOMBRE' => 1, 'PRECIO' => 2, 'DESCRIPCION' => 3, 'CATEGORIA_ID' => 4, ),
-        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'nombre' => 1, 'precio' => 2, 'descripcion' => 3, 'categoria_id' => 4, ),
+        BasePeer::TYPE_PHPNAME => array ('Id' => 0, 'Nombre' => 1, 'PrecioUnitario' => 2, 'Descripcion' => 3, 'CategoriaId' => 4, ),
+        BasePeer::TYPE_STUDLYPHPNAME => array ('id' => 0, 'nombre' => 1, 'precioUnitario' => 2, 'descripcion' => 3, 'categoriaId' => 4, ),
+        BasePeer::TYPE_COLNAME => array (ProductoPeer::ID => 0, ProductoPeer::NOMBRE => 1, ProductoPeer::PRECIO_UNITARIO => 2, ProductoPeer::DESCRIPCION => 3, ProductoPeer::CATEGORIA_ID => 4, ),
+        BasePeer::TYPE_RAW_COLNAME => array ('ID' => 0, 'NOMBRE' => 1, 'PRECIO_UNITARIO' => 2, 'DESCRIPCION' => 3, 'CATEGORIA_ID' => 4, ),
+        BasePeer::TYPE_FIELDNAME => array ('id' => 0, 'nombre' => 1, 'precio_unitario' => 2, 'descripcion' => 3, 'categoria_id' => 4, ),
         BasePeer::TYPE_NUM => array (0, 1, 2, 3, 4, )
     );
 
@@ -168,13 +168,13 @@ abstract class BaseProductoPeer
         if (null === $alias) {
             $criteria->addSelectColumn(ProductoPeer::ID);
             $criteria->addSelectColumn(ProductoPeer::NOMBRE);
-            $criteria->addSelectColumn(ProductoPeer::PRECIO);
+            $criteria->addSelectColumn(ProductoPeer::PRECIO_UNITARIO);
             $criteria->addSelectColumn(ProductoPeer::DESCRIPCION);
             $criteria->addSelectColumn(ProductoPeer::CATEGORIA_ID);
         } else {
             $criteria->addSelectColumn($alias . '.id');
             $criteria->addSelectColumn($alias . '.nombre');
-            $criteria->addSelectColumn($alias . '.precio');
+            $criteria->addSelectColumn($alias . '.precio_unitario');
             $criteria->addSelectColumn($alias . '.descripcion');
             $criteria->addSelectColumn($alias . '.categoria_id');
         }

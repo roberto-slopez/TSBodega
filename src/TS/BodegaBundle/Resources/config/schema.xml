@@ -3,9 +3,10 @@
     <table name="producto">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
         <column name="nombre" type="varchar" primaryString="true" size="100" />
-        <column name="precio" type="decimal" />
-        <column name="descripcion" type="longvarchar" />
-         <column name="categoria_id" type="integer" />
+        <column name="precio_unitario" type="decimal" />
+        <column name="descripcion" type="varchar" size="180" />
+        <column name="categoria_id" type="integer" />
+
         <foreign-key foreignTable="categoria">
             <reference local="categoria_id" foreign="id" />
         </foreign-key>
@@ -13,11 +14,7 @@
     <table name="categoria">
         <column name="id"  type="integer" required="true" primaryKey="true" autoIncrement="true" />
         <column name="nombre" type="varchar" primaryString="true" size="100" />
-    </table>
-    <table name="usuarios">
-        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
-        <column name="nombre" type="varchar" primaryString="true" size="100" />
-        <column name="password" type="varchar" size="100" />
+        <column name="descripcion" type="varchar" primaryString="true" size="100" />
     </table>
     <table name="clientes">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
@@ -29,6 +26,42 @@
         <column name="telefono" type="varchar" size="100" />
         <column name="direccion" type="varchar" size="100" />
     </table>
+    <table name="compras">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="proveedor_id" type="integer" />
+        <column name="inventario_id" type="integer" />
+        <column name="factura_id" type="integer" />
+        <column name="producto_id" type="integer" />
+
+        <foreign-key foreignTable="proveedor">
+            <reference local="proveedor_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="factura">
+            <reference local="factura_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="inventario">
+            <reference local="inventario_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="producto">
+            <reference local="producto_id" foreign="id" />
+        </foreign-key>
+    </table>
+    <table name="ventas">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="inventario_id" type="integer" />
+        <column name="factura_id" type="integer" />
+        <column name="clientes_id" type="integer" />
+
+        <foreign-key foreignTable="clientes">
+            <reference local="clientes_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="factura">
+            <reference local="factura_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="inventario">
+            <reference local="inventario_id" foreign="id" />
+        </foreign-key>
+    </table>
     <table name="proveedor">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
         <column name="nombre" type="varchar" primaryString="true" size="100" />
@@ -39,14 +72,51 @@
         <column name="telefono" type="varchar" size="80" />
         <column name="movil" type="varchar" size="80" />
     </table>
+    <table name="factura">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="numero_factura" type="varchar" size="250" />
+        <column name="fecha" type="date" />
+        <column name="tipo" type="varchar" size="80"  />
+        <column name="clientes_id" type="integer" />
+        <column name="subtotal" type="decimal" />
+        <column name="impuesto" type="decimal" />
+        <column name="descuento" type="decimal" />
+        <column name="total" type="decimal" />
+
+        <foreign-key foreignTable="clientes">
+            <reference local="clientes_id" foreign="id" />
+        </foreign-key>
+    </table>
+    <table name="factura_detalle">
+        <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
+        <column name="factura_id" type="integer" />
+        <column name="cantidad" type="integer" />
+        <column name="producto_id" type="integer" />
+        <column name="precio_unitario" type="decimal" />
+        <column name="subtotal" type="decimal" />
+
+        <foreign-key foreignTable="producto">
+            <reference local="producto_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="factura">
+            <reference local="factura_id" foreign="id" />
+        </foreign-key>
+    </table>
     <table name="inventario">
         <column name="id" type="integer" required="true" primaryKey="true" autoIncrement="true" />
-        <column name="producto" type="varchar" primaryString="true" size="100" />
-        <column name="proveedor" type="varchar" size="150" />
-        <column name="fecha" type="date" size="80" />
-        <column name="stock" type="varchar" size="100" />
-        <column name="neto" type="decimal" size="80" />
-        <column name="" type="varchar" size="80" />
+        <column name="producto_id" type="integer" />
+        <column name="proveedor_id" type="integer" />
+        <column name="fecha" type="date"/>
+        <column name="stock" type="integer"/>
+        <column name="precio_unitario" type="decimal" />
+        <column name="neto" type="decimal" />
+        <column name="total" type="decimal" />
+
+        <foreign-key foreignTable="producto">
+            <reference local="producto_id" foreign="id" />
+        </foreign-key>
+        <foreign-key foreignTable="proveedor">
+            <reference local="proveedor_id" foreign="id" />
+        </foreign-key>
     </table>
-    
 </database>

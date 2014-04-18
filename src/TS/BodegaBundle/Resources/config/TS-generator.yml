@@ -1,0 +1,59 @@
+generator: admingenerator.generator.propel
+params:
+    model: TS\BodegaBundle\Model\Categoria
+    namespace_prefix: TS
+    concurrency_lock: ~
+    bundle_name: BodegaBundle
+    pk_requirement: ~
+    fields: ~
+    object_actions:
+        delete: ~
+    batch_actions:
+        delete: ~
+builders:
+    
+    list:
+        params:
+            title: Lista de categorias
+            display: [nombre]
+            actions:
+                new: 
+                  label: Agregar categoria
+            object_actions:
+                edit: ~
+                delete: ~
+                #excel: ~
+    excel:
+        params: ~
+        filename: [excel]
+        filetype: [xlsx]
+    filters:
+        params:
+            display: [nombre]
+    new:
+        params:
+            title: New object for BodegaBundle
+            display: [nombre]
+            actions:
+                save: ~
+                list: ~
+    edit:
+        params:
+            title: Editar
+            display: [nombre]
+            actions:
+                save: ~
+                list: ~
+    show:
+        params:
+            title: "You're viewing the object \"%object%\"|{ %object%: Categoria.title }|"
+            display: ~
+            actions:
+                list: ~
+                new: ~
+    actions:
+        params:
+            object_actions:
+                delete: ~
+            batch_actions:
+                delete: ~

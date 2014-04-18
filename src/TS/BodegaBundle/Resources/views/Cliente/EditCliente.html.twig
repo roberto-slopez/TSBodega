@@ -2,10 +2,10 @@
 
 {% block body %}
 <div class="row">
-    <div class="col-md-6">
-    <div class="panel panel-default">
+    <div class="col-md-12">
+    <div class="panel panel-info">
         <div class="panel-heading">
-            Actualizar Cliente
+            <h3>Actualizar Cliente</h3>
         </div>
         <div class="panel-body">
                 <form action="{{ path('ts_edit_cliente', {'id': idClient }) }}" method="post" {{ form_enctype(form) }} role="form">
@@ -31,7 +31,7 @@
                     {{ form_widget(form.nit, { 'attr': {'class': 'form-control'} }) }}
                     </div>
                     <div class="form-group">
-                    {{ form_label(form.telefono, 'No. Nit:') }}
+                    {{ form_label(form.telefono, 'Tel:') }}
                     {{ form_widget(form.telefono, { 'attr': {'class': 'form-control'} }) }}
                     </div>
                     <div class="form-group">

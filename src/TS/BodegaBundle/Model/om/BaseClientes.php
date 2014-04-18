@@ -9,11 +9,17 @@ use \Exception;
 use \PDO;
 use \Persistent;
 use \Propel;
+use \PropelCollection;
 use \PropelException;
+use \PropelObjectCollection;
 use \PropelPDO;
 use TS\BodegaBundle\Model\Clientes;
 use TS\BodegaBundle\Model\ClientesPeer;
 use TS\BodegaBundle\Model\ClientesQuery;
+use TS\BodegaBundle\Model\Factura;
+use TS\BodegaBundle\Model\FacturaQuery;
+use TS\BodegaBundle\Model\Ventas;
+use TS\BodegaBundle\Model\VentasQuery;
 
 abstract class BaseClientes extends BaseObject implements Persistent
 {
@@ -85,6 +91,18 @@ abstract class BaseClientes extends BaseObject implements Persistent
     protected $direccion;
 
     /**
+     * @var        PropelObjectCollection|Ventas[] Collection to store aggregation of Ventas objects.
+     */
+    protected $collVentass;
+    protected $collVentassPartial;
+
+    /**
+     * @var        PropelObjectCollection|Factura[] Collection to store aggregation of Factura objects.
+     */
+    protected $collFacturas;
+    protected $collFacturasPartial;
+
+    /**
      * Flag to prevent endless save loop, if this object is referenced
      * by another object which falls in this transaction.
      * @var        boolean
@@ -103,6 +121,18 @@ abstract class BaseClientes extends BaseObject implements Persistent
      * @var        boolean
      */
     protected $alreadyInClearAllReferencesDeep = false;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $ventassScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $facturasScheduledForDeletion = null;
 
     /**
      * Get the [id] column value.
@@ -471,6 +501,10 @@ abstract class BaseClientes extends BaseObject implements Persistent
 
         if ($deep) {  // also de-associate any related objects?
 
+            $this->collVentass = null;
+
+            $this->collFacturas = null;
+
         } // if (deep)
     }
 
@@ -593,6 +627,42 @@ abstract class BaseClientes extends BaseObject implements Persistent
                 }
                 $affectedRows += 1;
                 $this->resetModified();
+            }
+
+            if ($this->ventassScheduledForDeletion !== null) {
+                if (!$this->ventassScheduledForDeletion->isEmpty()) {
+                    foreach ($this->ventassScheduledForDeletion as $ventas) {
+                        // need to save related object because we set the relation to null
+                        $ventas->save($con);
+                    }
+                    $this->ventassScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collVentass !== null) {
+                foreach ($this->collVentass as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->facturasScheduledForDeletion !== null) {
+                if (!$this->facturasScheduledForDeletion->isEmpty()) {
+                    foreach ($this->facturasScheduledForDeletion as $factura) {
+                        // need to save related object because we set the relation to null
+                        $factura->save($con);
+                    }
+                    $this->facturasScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collFacturas !== null) {
+                foreach ($this->collFacturas as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
             }
 
             $this->alreadyInSave = false;
@@ -779,6 +849,22 @@ abstract class BaseClientes extends BaseObject implements Persistent
             }
 
 
+                if ($this->collVentass !== null) {
+                    foreach ($this->collVentass as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
+                if ($this->collFacturas !== null) {
+                    foreach ($this->collFacturas as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
 
             $this->alreadyInValidation = false;
         }
@@ -855,10 +941,11 @@ abstract class BaseClientes extends BaseObject implements Persistent
      *                    Defaults to BasePeer::TYPE_PHPNAME.
      * @param     boolean $includeLazyLoadColumns (optional) Whether to include lazy loaded columns. Defaults to true.
      * @param     array $alreadyDumpedObjects List of objects to skip to avoid recursion
+     * @param     boolean $includeForeignObjects (optional) Whether to include hydrated related objects. Default to FALSE.
      *
      * @return array an associative array containing the field names (as keys) and field values
      */
-    public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array())
+    public function toArray($keyType = BasePeer::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
         if (isset($alreadyDumpedObjects['Clientes'][$this->getPrimaryKey()])) {
             return '*RECURSION*';
@@ -880,6 +967,14 @@ abstract class BaseClientes extends BaseObject implements Persistent
             $result[$key] = $virtualColumn;
         }
 
+        if ($includeForeignObjects) {
+            if (null !== $this->collVentass) {
+                $result['Ventass'] = $this->collVentass->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collFacturas) {
+                $result['Facturas'] = $this->collFacturas->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+        }
 
         return $result;
     }
@@ -1058,6 +1153,30 @@ abstract class BaseClientes extends BaseObject implements Persistent
         $copyObj->setNit($this->getNit());
         $copyObj->setTelefono($this->getTelefono());
         $copyObj->setDireccion($this->getDireccion());
+
+        if ($deepCopy && !$this->startCopy) {
+            // important: temporarily setNew(false) because this affects the behavior of
+            // the getter/setter methods for fkey referrer objects.
+            $copyObj->setNew(false);
+            // store object hash to prevent cycle
+            $this->startCopy = true;
+
+            foreach ($this->getVentass() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addVentas($relObj->copy($deepCopy));
+                }
+            }
+
+            foreach ($this->getFacturas() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addFactura($relObj->copy($deepCopy));
+                }
+            }
+
+            //unflag object copy
+            $this->startCopy = false;
+        } // if ($deepCopy)
+
         if ($makeNew) {
             $copyObj->setNew(true);
             $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
@@ -1104,6 +1223,525 @@ abstract class BaseClientes extends BaseObject implements Persistent
         return self::$peer;
     }
 
+
+    /**
+     * Initializes a collection based on the name of a relation.
+     * Avoids crafting an 'init[$relationName]s' method name
+     * that wouldn't work when StandardEnglishPluralizer is used.
+     *
+     * @param string $relationName The name of the relation to initialize
+     * @return void
+     */
+    public function initRelation($relationName)
+    {
+        if ('Ventas' == $relationName) {
+            $this->initVentass();
+        }
+        if ('Factura' == $relationName) {
+            $this->initFacturas();
+        }
+    }
+
+    /**
+     * Clears out the collVentass collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Clientes The current object (for fluent API support)
+     * @see        addVentass()
+     */
+    public function clearVentass()
+    {
+        $this->collVentass = null; // important to set this to null since that means it is uninitialized
+        $this->collVentassPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collVentass collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialVentass($v = true)
+    {
+        $this->collVentassPartial = $v;
+    }
+
+    /**
+     * Initializes the collVentass collection.
+     *
+     * By default this just sets the collVentass collection to an empty array (like clearcollVentass());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initVentass($overrideExisting = true)
+    {
+        if (null !== $this->collVentass && !$overrideExisting) {
+            return;
+        }
+        $this->collVentass = new PropelObjectCollection();
+        $this->collVentass->setModel('Ventas');
+    }
+
+    /**
+     * Gets an array of Ventas objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Clientes is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|Ventas[] List of Ventas objects
+     * @throws PropelException
+     */
+    public function getVentass($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collVentassPartial && !$this->isNew();
+        if (null === $this->collVentass || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collVentass) {
+                // return empty collection
+                $this->initVentass();
+            } else {
+                $collVentass = VentasQuery::create(null, $criteria)
+                    ->filterByClientes($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collVentassPartial && count($collVentass)) {
+                      $this->initVentass(false);
+
+                      foreach ($collVentass as $obj) {
+                        if (false == $this->collVentass->contains($obj)) {
+                          $this->collVentass->append($obj);
+                        }
+                      }
+
+                      $this->collVentassPartial = true;
+                    }
+
+                    $collVentass->getInternalIterator()->rewind();
+
+                    return $collVentass;
+                }
+
+                if ($partial && $this->collVentass) {
+                    foreach ($this->collVentass as $obj) {
+                        if ($obj->isNew()) {
+                            $collVentass[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collVentass = $collVentass;
+                $this->collVentassPartial = false;
+            }
+        }
+
+        return $this->collVentass;
+    }
+
+    /**
+     * Sets a collection of Ventas objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $ventass A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Clientes The current object (for fluent API support)
+     */
+    public function setVentass(PropelCollection $ventass, PropelPDO $con = null)
+    {
+        $ventassToDelete = $this->getVentass(new Criteria(), $con)->diff($ventass);
+
+
+        $this->ventassScheduledForDeletion = $ventassToDelete;
+
+        foreach ($ventassToDelete as $ventasRemoved) {
+            $ventasRemoved->setClientes(null);
+        }
+
+        $this->collVentass = null;
+        foreach ($ventass as $ventas) {
+            $this->addVentas($ventas);
+        }
+
+        $this->collVentass = $ventass;
+        $this->collVentassPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Ventas objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related Ventas objects.
+     * @throws PropelException
+     */
+    public function countVentass(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collVentassPartial && !$this->isNew();
+        if (null === $this->collVentass || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collVentass) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getVentass());
+            }
+            $query = VentasQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByClientes($this)
+                ->count($con);
+        }
+
+        return count($this->collVentass);
+    }
+
+    /**
+     * Method called to associate a Ventas object to this object
+     * through the Ventas foreign key attribute.
+     *
+     * @param    Ventas $l Ventas
+     * @return Clientes The current object (for fluent API support)
+     */
+    public function addVentas(Ventas $l)
+    {
+        if ($this->collVentass === null) {
+            $this->initVentass();
+            $this->collVentassPartial = true;
+        }
+
+        if (!in_array($l, $this->collVentass->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddVentas($l);
+
+            if ($this->ventassScheduledForDeletion and $this->ventassScheduledForDeletion->contains($l)) {
+                $this->ventassScheduledForDeletion->remove($this->ventassScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	Ventas $ventas The ventas object to add.
+     */
+    protected function doAddVentas($ventas)
+    {
+        $this->collVentass[]= $ventas;
+        $ventas->setClientes($this);
+    }
+
+    /**
+     * @param	Ventas $ventas The ventas object to remove.
+     * @return Clientes The current object (for fluent API support)
+     */
+    public function removeVentas($ventas)
+    {
+        if ($this->getVentass()->contains($ventas)) {
+            $this->collVentass->remove($this->collVentass->search($ventas));
+            if (null === $this->ventassScheduledForDeletion) {
+                $this->ventassScheduledForDeletion = clone $this->collVentass;
+                $this->ventassScheduledForDeletion->clear();
+            }
+            $this->ventassScheduledForDeletion[]= $ventas;
+            $ventas->setClientes(null);
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Clientes is new, it will return
+     * an empty collection; or if this Clientes has previously
+     * been saved, it will retrieve related Ventass from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Clientes.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|Ventas[] List of Ventas objects
+     */
+    public function getVentassJoinFactura($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = VentasQuery::create(null, $criteria);
+        $query->joinWith('Factura', $join_behavior);
+
+        return $this->getVentass($query, $con);
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Clientes is new, it will return
+     * an empty collection; or if this Clientes has previously
+     * been saved, it will retrieve related Ventass from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Clientes.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|Ventas[] List of Ventas objects
+     */
+    public function getVentassJoinInventario($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = VentasQuery::create(null, $criteria);
+        $query->joinWith('Inventario', $join_behavior);
+
+        return $this->getVentass($query, $con);
+    }
+
+    /**
+     * Clears out the collFacturas collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Clientes The current object (for fluent API support)
+     * @see        addFacturas()
+     */
+    public function clearFacturas()
+    {
+        $this->collFacturas = null; // important to set this to null since that means it is uninitialized
+        $this->collFacturasPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collFacturas collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialFacturas($v = true)
+    {
+        $this->collFacturasPartial = $v;
+    }
+
+    /**
+     * Initializes the collFacturas collection.
+     *
+     * By default this just sets the collFacturas collection to an empty array (like clearcollFacturas());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initFacturas($overrideExisting = true)
+    {
+        if (null !== $this->collFacturas && !$overrideExisting) {
+            return;
+        }
+        $this->collFacturas = new PropelObjectCollection();
+        $this->collFacturas->setModel('Factura');
+    }
+
+    /**
+     * Gets an array of Factura objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Clientes is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|Factura[] List of Factura objects
+     * @throws PropelException
+     */
+    public function getFacturas($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collFacturasPartial && !$this->isNew();
+        if (null === $this->collFacturas || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collFacturas) {
+                // return empty collection
+                $this->initFacturas();
+            } else {
+                $collFacturas = FacturaQuery::create(null, $criteria)
+                    ->filterByClientes($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collFacturasPartial && count($collFacturas)) {
+                      $this->initFacturas(false);
+
+                      foreach ($collFacturas as $obj) {
+                        if (false == $this->collFacturas->contains($obj)) {
+                          $this->collFacturas->append($obj);
+                        }
+                      }
+
+                      $this->collFacturasPartial = true;
+                    }
+
+                    $collFacturas->getInternalIterator()->rewind();
+
+                    return $collFacturas;
+                }
+
+                if ($partial && $this->collFacturas) {
+                    foreach ($this->collFacturas as $obj) {
+                        if ($obj->isNew()) {
+                            $collFacturas[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collFacturas = $collFacturas;
+                $this->collFacturasPartial = false;
+            }
+        }
+
+        return $this->collFacturas;
+    }
+
+    /**
+     * Sets a collection of Factura objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $facturas A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Clientes The current object (for fluent API support)
+     */
+    public function setFacturas(PropelCollection $facturas, PropelPDO $con = null)
+    {
+        $facturasToDelete = $this->getFacturas(new Criteria(), $con)->diff($facturas);
+
+
+        $this->facturasScheduledForDeletion = $facturasToDelete;
+
+        foreach ($facturasToDelete as $facturaRemoved) {
+            $facturaRemoved->setClientes(null);
+        }
+
+        $this->collFacturas = null;
+        foreach ($facturas as $factura) {
+            $this->addFactura($factura);
+        }
+
+        $this->collFacturas = $facturas;
+        $this->collFacturasPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Factura objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related Factura objects.
+     * @throws PropelException
+     */
+    public function countFacturas(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collFacturasPartial && !$this->isNew();
+        if (null === $this->collFacturas || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collFacturas) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getFacturas());
+            }
+            $query = FacturaQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByClientes($this)
+                ->count($con);
+        }
+
+        return count($this->collFacturas);
+    }
+
+    /**
+     * Method called to associate a Factura object to this object
+     * through the Factura foreign key attribute.
+     *
+     * @param    Factura $l Factura
+     * @return Clientes The current object (for fluent API support)
+     */
+    public function addFactura(Factura $l)
+    {
+        if ($this->collFacturas === null) {
+            $this->initFacturas();
+            $this->collFacturasPartial = true;
+        }
+
+        if (!in_array($l, $this->collFacturas->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddFactura($l);
+
+            if ($this->facturasScheduledForDeletion and $this->facturasScheduledForDeletion->contains($l)) {
+                $this->facturasScheduledForDeletion->remove($this->facturasScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	Factura $factura The factura object to add.
+     */
+    protected function doAddFactura($factura)
+    {
+        $this->collFacturas[]= $factura;
+        $factura->setClientes($this);
+    }
+
+    /**
+     * @param	Factura $factura The factura object to remove.
+     * @return Clientes The current object (for fluent API support)
+     */
+    public function removeFactura($factura)
+    {
+        if ($this->getFacturas()->contains($factura)) {
+            $this->collFacturas->remove($this->collFacturas->search($factura));
+            if (null === $this->facturasScheduledForDeletion) {
+                $this->facturasScheduledForDeletion = clone $this->collFacturas;
+                $this->facturasScheduledForDeletion->clear();
+            }
+            $this->facturasScheduledForDeletion[]= $factura;
+            $factura->setClientes(null);
+        }
+
+        return $this;
+    }
+
     /**
      * Clears the current object and sets all attributes to their default values
      */
@@ -1139,10 +1777,28 @@ abstract class BaseClientes extends BaseObject implements Persistent
     {
         if ($deep && !$this->alreadyInClearAllReferencesDeep) {
             $this->alreadyInClearAllReferencesDeep = true;
+            if ($this->collVentass) {
+                foreach ($this->collVentass as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
+            if ($this->collFacturas) {
+                foreach ($this->collFacturas as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
 
             $this->alreadyInClearAllReferencesDeep = false;
         } // if ($deep)
 
+        if ($this->collVentass instanceof PropelCollection) {
+            $this->collVentass->clearIterator();
+        }
+        $this->collVentass = null;
+        if ($this->collFacturas instanceof PropelCollection) {
+            $this->collFacturas->clearIterator();
+        }
+        $this->collFacturas = null;
     }
 
     /**

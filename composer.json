@@ -8,6 +8,7 @@
     },
     "require": {
         "php": ">=5.5",
+        "cedriclombardot/admingenerator-generator-bundle": "2.3.*@dev",
         "willdurand/propel-typehintable-behavior": "~1.0",
         "friendsofsymfony/user-bundle": "2.0.*@dev",
         "propel/propel-bundle": "1.4.*",
@@ -41,7 +42,8 @@
         ]
     },
     "config": {
-        "bin-dir": "bin"
+        "bin-dir": "bin",
+        "component-dir": "web/components" 
     },
     "extra": {
         "symfony-app-dir": "app",

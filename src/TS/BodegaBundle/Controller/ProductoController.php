@@ -18,7 +18,10 @@ class ProductoController extends Controller
 
             if ($form->isValid()) {
                 $producto->save();
-
+                $this->get('session')->getFlashBag()->add(
+                    'exito',
+                    'Nuevo producto guardada con exito'
+                );
                 return $this->redirect($this->generateUrl('ts_home_producto'));
             }
         }
@@ -38,6 +41,10 @@ class ProductoController extends Controller
 
             if ($form->isValid()) {
                 $editProducto->save();
+                $this->get('session')->getFlashBag()->add(
+                    'exito',
+                    'El producto: '.$editProducto->getNombre().' se actualizo con exito'
+                );
                 return $this->redirect($this->generateUrl('ts_home_producto'));
             }
         }

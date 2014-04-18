@@ -37,3 +37,47 @@ ts_edit_cliente:
 ts_home_cliente:
     pattern: /HomeCliente
     defaults: { _controller: TSBodegaBundle:Cliente:HomeCliente }
+
+ts_new_proveedor:
+    pattern: /NewProveedor
+    defaults: { _controller: TSBodegaBundle:Proveedor:newProveedor }
+
+ts_edit_proveedor:
+    pattern: /EditProveedor/{id}
+    defaults: { _controller: TSBodegaBundle:Proveedor:editProveedor }
+
+ts_home_proveedor:
+    pattern: /HomeProveedor
+    defaults: { _controller: TSBodegaBundle:Proveedor:homeProveedor }
+
+ts_new_inventario:
+    pattern: /newInventario
+    defaults: { _controller: TSBodegaBundle:Inventario:newInventario }
+
+ts_edit_inventario:
+    pattern: /editInventario
+    defaults: { _controller: TSBodegaBundle:Inventario:editInventario }
+
+ts_home_inventario:
+    pattern: /homeInventario
+    defaults: { _controller: TSBodegaBundle:Inventario:homeInventario }
+
+ts_home_compras:
+    pattern: /homeCompras
+    defaults: { _controller: TSBodegaBundle:Compras:homeCompras }
+
+ts_home_ventas:
+    pattern: /homeVentas
+    defaults: { _controller: TSBodegaBundle:Ventas:homeVentas }
+
+ts_home_factura:
+    pattern: /homeFactura
+    defaults: { _controller: TSBodegaBundle:Factura:homeFactura }
+
+ts_new_factura:
+    pattern: /newFactura
+    defaults: { _controller: TSBodegaBundle:Factura:newFactura }
+
+ts_imprime_factura:
+    pattern: /imprimeFactura
+    defaults: { _controller: TSBodegaBundle:Factura:imprimeFactura }

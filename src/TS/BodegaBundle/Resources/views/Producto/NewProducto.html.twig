@@ -1,6 +1,13 @@
 {% extends "::base.html.twig" %}
 
 {% block body %}
+<div class="row">
+    <div class="col-md-12">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3>Agregar Producto</h3>
+        </div>
+        <div class="panel-body">
             <form action="{{ path('ts_new_producto') }}" method="post" {{ form_enctype(form) }}  role="form">
                 {{ form_start(form) }}
                 {{ form_errors(form) }}
@@ -12,8 +19,8 @@
                     {{ form_widget(form.nombre, { 'attr': {'class': 'form-control'} }) }}
                 </div>
                 <div class="form-group">
-                    {{ form_label(form.precio, 'Precio:') }}
-                    {{ form_widget(form.precio, { 'attr': {'class': 'form-control'} }) }}
+                    {{ form_label(form.precio_unitario, 'Precio Unitario:') }}
+                    {{ form_widget(form.precio_unitario, { 'attr': {'class': 'form-control'} }) }}
                 </div>
                 <div class="form-group">
                     {{ form_label(form.descripcion, 'Descripcion:') }}
@@ -48,4 +55,8 @@
             </form>
             {{ form_end(form) }}
             {{ form(form) }}
+        </div>
+    </div>
+    </div>
+</div>
 {% endblock %}

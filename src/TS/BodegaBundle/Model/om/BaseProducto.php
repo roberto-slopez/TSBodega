@@ -9,10 +9,18 @@ use \Exception;
 use \PDO;
 use \Persistent;
 use \Propel;
+use \PropelCollection;
 use \PropelException;
+use \PropelObjectCollection;
 use \PropelPDO;
 use TS\BodegaBundle\Model\Categoria;
 use TS\BodegaBundle\Model\CategoriaQuery;
+use TS\BodegaBundle\Model\Compras;
+use TS\BodegaBundle\Model\ComprasQuery;
+use TS\BodegaBundle\Model\FacturaDetalle;
+use TS\BodegaBundle\Model\FacturaDetalleQuery;
+use TS\BodegaBundle\Model\Inventario;
+use TS\BodegaBundle\Model\InventarioQuery;
 use TS\BodegaBundle\Model\Producto;
 use TS\BodegaBundle\Model\ProductoPeer;
 use TS\BodegaBundle\Model\ProductoQuery;
@@ -51,10 +59,10 @@ abstract class BaseProducto extends BaseObject implements Persistent
     protected $nombre;
 
     /**
-     * The value for the precio field.
+     * The value for the precio_unitario field.
      * @var        string
      */
-    protected $precio;
+    protected $precio_unitario;
 
     /**
      * The value for the descripcion field.
@@ -72,6 +80,24 @@ abstract class BaseProducto extends BaseObject implements Persistent
      * @var        Categoria
      */
     protected $aCategoria;
+
+    /**
+     * @var        PropelObjectCollection|Compras[] Collection to store aggregation of Compras objects.
+     */
+    protected $collComprass;
+    protected $collComprassPartial;
+
+    /**
+     * @var        PropelObjectCollection|FacturaDetalle[] Collection to store aggregation of FacturaDetalle objects.
+     */
+    protected $collFacturaDetalles;
+    protected $collFacturaDetallesPartial;
+
+    /**
+     * @var        PropelObjectCollection|Inventario[] Collection to store aggregation of Inventario objects.
+     */
+    protected $collInventarios;
+    protected $collInventariosPartial;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -92,6 +118,24 @@ abstract class BaseProducto extends BaseObject implements Persistent
      * @var        boolean
      */
     protected $alreadyInClearAllReferencesDeep = false;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $comprassScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $facturaDetallesScheduledForDeletion = null;
+
+    /**
+     * An array of objects scheduled for deletion.
+     * @var		PropelObjectCollection
+     */
+    protected $inventariosScheduledForDeletion = null;
 
     /**
      * Get the [id] column value.
@@ -116,14 +160,14 @@ abstract class BaseProducto extends BaseObject implements Persistent
     }
 
     /**
-     * Get the [precio] column value.
+     * Get the [precio_unitario] column value.
      *
      * @return string
      */
-    public function getPrecio()
+    public function getPrecioUnitario()
     {
 
-        return $this->precio;
+        return $this->precio_unitario;
     }
 
     /**
@@ -191,25 +235,25 @@ abstract class BaseProducto extends BaseObject implements Persistent
     } // setNombre()
 
     /**
-     * Set the value of [precio] column.
+     * Set the value of [precio_unitario] column.
      *
      * @param  string $v new value
      * @return Producto The current object (for fluent API support)
      */
-    public function setPrecio($v)
+    public function setPrecioUnitario($v)
     {
         if ($v !== null && is_numeric($v)) {
             $v = (string) $v;
         }
 
-        if ($this->precio !== $v) {
-            $this->precio = $v;
-            $this->modifiedColumns[] = ProductoPeer::PRECIO;
+        if ($this->precio_unitario !== $v) {
+            $this->precio_unitario = $v;
+            $this->modifiedColumns[] = ProductoPeer::PRECIO_UNITARIO;
         }
 
 
         return $this;
-    } // setPrecio()
+    } // setPrecioUnitario()
 
     /**
      * Set the value of [descripcion] column.
@@ -291,7 +335,7 @@ abstract class BaseProducto extends BaseObject implements Persistent
 
             $this->id = ($row[$startcol + 0] !== null) ? (int) $row[$startcol + 0] : null;
             $this->nombre = ($row[$startcol + 1] !== null) ? (string) $row[$startcol + 1] : null;
-            $this->precio = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
+            $this->precio_unitario = ($row[$startcol + 2] !== null) ? (string) $row[$startcol + 2] : null;
             $this->descripcion = ($row[$startcol + 3] !== null) ? (string) $row[$startcol + 3] : null;
             $this->categoria_id = ($row[$startcol + 4] !== null) ? (int) $row[$startcol + 4] : null;
             $this->resetModified();
@@ -369,6 +413,12 @@ abstract class BaseProducto extends BaseObject implements Persistent
         if ($deep) {  // also de-associate any related objects?
 
             $this->aCategoria = null;
+            $this->collComprass = null;
+
+            $this->collFacturaDetalles = null;
+
+            $this->collInventarios = null;
+
         } // if (deep)
     }
 
@@ -505,6 +555,60 @@ abstract class BaseProducto extends BaseObject implements Persistent
                 $this->resetModified();
             }
 
+            if ($this->comprassScheduledForDeletion !== null) {
+                if (!$this->comprassScheduledForDeletion->isEmpty()) {
+                    foreach ($this->comprassScheduledForDeletion as $compras) {
+                        // need to save related object because we set the relation to null
+                        $compras->save($con);
+                    }
+                    $this->comprassScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collComprass !== null) {
+                foreach ($this->collComprass as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->facturaDetallesScheduledForDeletion !== null) {
+                if (!$this->facturaDetallesScheduledForDeletion->isEmpty()) {
+                    foreach ($this->facturaDetallesScheduledForDeletion as $facturaDetalle) {
+                        // need to save related object because we set the relation to null
+                        $facturaDetalle->save($con);
+                    }
+                    $this->facturaDetallesScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collFacturaDetalles !== null) {
+                foreach ($this->collFacturaDetalles as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
+            if ($this->inventariosScheduledForDeletion !== null) {
+                if (!$this->inventariosScheduledForDeletion->isEmpty()) {
+                    foreach ($this->inventariosScheduledForDeletion as $inventario) {
+                        // need to save related object because we set the relation to null
+                        $inventario->save($con);
+                    }
+                    $this->inventariosScheduledForDeletion = null;
+                }
+            }
+
+            if ($this->collInventarios !== null) {
+                foreach ($this->collInventarios as $referrerFK) {
+                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
+                        $affectedRows += $referrerFK->save($con);
+                    }
+                }
+            }
+
             $this->alreadyInSave = false;
 
         }
@@ -537,8 +641,8 @@ abstract class BaseProducto extends BaseObject implements Persistent
         if ($this->isColumnModified(ProductoPeer::NOMBRE)) {
             $modifiedColumns[':p' . $index++]  = '`nombre`';
         }
-        if ($this->isColumnModified(ProductoPeer::PRECIO)) {
-            $modifiedColumns[':p' . $index++]  = '`precio`';
+        if ($this->isColumnModified(ProductoPeer::PRECIO_UNITARIO)) {
+            $modifiedColumns[':p' . $index++]  = '`precio_unitario`';
         }
         if ($this->isColumnModified(ProductoPeer::DESCRIPCION)) {
             $modifiedColumns[':p' . $index++]  = '`descripcion`';
@@ -563,8 +667,8 @@ abstract class BaseProducto extends BaseObject implements Persistent
                     case '`nombre`':
                         $stmt->bindValue($identifier, $this->nombre, PDO::PARAM_STR);
                         break;
-                    case '`precio`':
-                        $stmt->bindValue($identifier, $this->precio, PDO::PARAM_STR);
+                    case '`precio_unitario`':
+                        $stmt->bindValue($identifier, $this->precio_unitario, PDO::PARAM_STR);
                         break;
                     case '`descripcion`':
                         $stmt->bindValue($identifier, $this->descripcion, PDO::PARAM_STR);
@@ -683,6 +787,30 @@ abstract class BaseProducto extends BaseObject implements Persistent
             }
 
 
+                if ($this->collComprass !== null) {
+                    foreach ($this->collComprass as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
+                if ($this->collFacturaDetalles !== null) {
+                    foreach ($this->collFacturaDetalles as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
+                if ($this->collInventarios !== null) {
+                    foreach ($this->collInventarios as $referrerFK) {
+                        if (!$referrerFK->validate($columns)) {
+                            $failureMap = array_merge($failureMap, $referrerFK->getValidationFailures());
+                        }
+                    }
+                }
+
 
             $this->alreadyInValidation = false;
         }
@@ -725,7 +853,7 @@ abstract class BaseProducto extends BaseObject implements Persistent
                 return $this->getNombre();
                 break;
             case 2:
-                return $this->getPrecio();
+                return $this->getPrecioUnitario();
                 break;
             case 3:
                 return $this->getDescripcion();
@@ -764,7 +892,7 @@ abstract class BaseProducto extends BaseObject implements Persistent
         $result = array(
             $keys[0] => $this->getId(),
             $keys[1] => $this->getNombre(),
-            $keys[2] => $this->getPrecio(),
+            $keys[2] => $this->getPrecioUnitario(),
             $keys[3] => $this->getDescripcion(),
             $keys[4] => $this->getCategoriaId(),
         );
@@ -776,6 +904,15 @@ abstract class BaseProducto extends BaseObject implements Persistent
         if ($includeForeignObjects) {
             if (null !== $this->aCategoria) {
                 $result['Categoria'] = $this->aCategoria->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
+            }
+            if (null !== $this->collComprass) {
+                $result['Comprass'] = $this->collComprass->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collFacturaDetalles) {
+                $result['FacturaDetalles'] = $this->collFacturaDetalles->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            }
+            if (null !== $this->collInventarios) {
+                $result['Inventarios'] = $this->collInventarios->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
             }
         }
 
@@ -818,7 +955,7 @@ abstract class BaseProducto extends BaseObject implements Persistent
                 $this->setNombre($value);
                 break;
             case 2:
-                $this->setPrecio($value);
+                $this->setPrecioUnitario($value);
                 break;
             case 3:
                 $this->setDescripcion($value);
@@ -852,7 +989,7 @@ abstract class BaseProducto extends BaseObject implements Persistent
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
         if (array_key_exists($keys[1], $arr)) $this->setNombre($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setPrecio($arr[$keys[2]]);
+        if (array_key_exists($keys[2], $arr)) $this->setPrecioUnitario($arr[$keys[2]]);
         if (array_key_exists($keys[3], $arr)) $this->setDescripcion($arr[$keys[3]]);
         if (array_key_exists($keys[4], $arr)) $this->setCategoriaId($arr[$keys[4]]);
     }
@@ -868,7 +1005,7 @@ abstract class BaseProducto extends BaseObject implements Persistent
 
         if ($this->isColumnModified(ProductoPeer::ID)) $criteria->add(ProductoPeer::ID, $this->id);
         if ($this->isColumnModified(ProductoPeer::NOMBRE)) $criteria->add(ProductoPeer::NOMBRE, $this->nombre);
-        if ($this->isColumnModified(ProductoPeer::PRECIO)) $criteria->add(ProductoPeer::PRECIO, $this->precio);
+        if ($this->isColumnModified(ProductoPeer::PRECIO_UNITARIO)) $criteria->add(ProductoPeer::PRECIO_UNITARIO, $this->precio_unitario);
         if ($this->isColumnModified(ProductoPeer::DESCRIPCION)) $criteria->add(ProductoPeer::DESCRIPCION, $this->descripcion);
         if ($this->isColumnModified(ProductoPeer::CATEGORIA_ID)) $criteria->add(ProductoPeer::CATEGORIA_ID, $this->categoria_id);
 
@@ -935,7 +1072,7 @@ abstract class BaseProducto extends BaseObject implements Persistent
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
         $copyObj->setNombre($this->getNombre());
-        $copyObj->setPrecio($this->getPrecio());
+        $copyObj->setPrecioUnitario($this->getPrecioUnitario());
         $copyObj->setDescripcion($this->getDescripcion());
         $copyObj->setCategoriaId($this->getCategoriaId());
 
@@ -945,6 +1082,24 @@ abstract class BaseProducto extends BaseObject implements Persistent
             $copyObj->setNew(false);
             // store object hash to prevent cycle
             $this->startCopy = true;
+
+            foreach ($this->getComprass() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addCompras($relObj->copy($deepCopy));
+                }
+            }
+
+            foreach ($this->getFacturaDetalles() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addFacturaDetalle($relObj->copy($deepCopy));
+                }
+            }
+
+            foreach ($this->getInventarios() as $relObj) {
+                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
+                    $copyObj->addInventario($relObj->copy($deepCopy));
+                }
+            }
 
             //unflag object copy
             $this->startCopy = false;
@@ -1048,6 +1203,828 @@ abstract class BaseProducto extends BaseObject implements Persistent
         return $this->aCategoria;
     }
 
+
+    /**
+     * Initializes a collection based on the name of a relation.
+     * Avoids crafting an 'init[$relationName]s' method name
+     * that wouldn't work when StandardEnglishPluralizer is used.
+     *
+     * @param string $relationName The name of the relation to initialize
+     * @return void
+     */
+    public function initRelation($relationName)
+    {
+        if ('Compras' == $relationName) {
+            $this->initComprass();
+        }
+        if ('FacturaDetalle' == $relationName) {
+            $this->initFacturaDetalles();
+        }
+        if ('Inventario' == $relationName) {
+            $this->initInventarios();
+        }
+    }
+
+    /**
+     * Clears out the collComprass collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Producto The current object (for fluent API support)
+     * @see        addComprass()
+     */
+    public function clearComprass()
+    {
+        $this->collComprass = null; // important to set this to null since that means it is uninitialized
+        $this->collComprassPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collComprass collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialComprass($v = true)
+    {
+        $this->collComprassPartial = $v;
+    }
+
+    /**
+     * Initializes the collComprass collection.
+     *
+     * By default this just sets the collComprass collection to an empty array (like clearcollComprass());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initComprass($overrideExisting = true)
+    {
+        if (null !== $this->collComprass && !$overrideExisting) {
+            return;
+        }
+        $this->collComprass = new PropelObjectCollection();
+        $this->collComprass->setModel('Compras');
+    }
+
+    /**
+     * Gets an array of Compras objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Producto is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|Compras[] List of Compras objects
+     * @throws PropelException
+     */
+    public function getComprass($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collComprassPartial && !$this->isNew();
+        if (null === $this->collComprass || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collComprass) {
+                // return empty collection
+                $this->initComprass();
+            } else {
+                $collComprass = ComprasQuery::create(null, $criteria)
+                    ->filterByProducto($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collComprassPartial && count($collComprass)) {
+                      $this->initComprass(false);
+
+                      foreach ($collComprass as $obj) {
+                        if (false == $this->collComprass->contains($obj)) {
+                          $this->collComprass->append($obj);
+                        }
+                      }
+
+                      $this->collComprassPartial = true;
+                    }
+
+                    $collComprass->getInternalIterator()->rewind();
+
+                    return $collComprass;
+                }
+
+                if ($partial && $this->collComprass) {
+                    foreach ($this->collComprass as $obj) {
+                        if ($obj->isNew()) {
+                            $collComprass[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collComprass = $collComprass;
+                $this->collComprassPartial = false;
+            }
+        }
+
+        return $this->collComprass;
+    }
+
+    /**
+     * Sets a collection of Compras objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $comprass A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Producto The current object (for fluent API support)
+     */
+    public function setComprass(PropelCollection $comprass, PropelPDO $con = null)
+    {
+        $comprassToDelete = $this->getComprass(new Criteria(), $con)->diff($comprass);
+
+
+        $this->comprassScheduledForDeletion = $comprassToDelete;
+
+        foreach ($comprassToDelete as $comprasRemoved) {
+            $comprasRemoved->setProducto(null);
+        }
+
+        $this->collComprass = null;
+        foreach ($comprass as $compras) {
+            $this->addCompras($compras);
+        }
+
+        $this->collComprass = $comprass;
+        $this->collComprassPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Compras objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related Compras objects.
+     * @throws PropelException
+     */
+    public function countComprass(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collComprassPartial && !$this->isNew();
+        if (null === $this->collComprass || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collComprass) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getComprass());
+            }
+            $query = ComprasQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByProducto($this)
+                ->count($con);
+        }
+
+        return count($this->collComprass);
+    }
+
+    /**
+     * Method called to associate a Compras object to this object
+     * through the Compras foreign key attribute.
+     *
+     * @param    Compras $l Compras
+     * @return Producto The current object (for fluent API support)
+     */
+    public function addCompras(Compras $l)
+    {
+        if ($this->collComprass === null) {
+            $this->initComprass();
+            $this->collComprassPartial = true;
+        }
+
+        if (!in_array($l, $this->collComprass->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddCompras($l);
+
+            if ($this->comprassScheduledForDeletion and $this->comprassScheduledForDeletion->contains($l)) {
+                $this->comprassScheduledForDeletion->remove($this->comprassScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	Compras $compras The compras object to add.
+     */
+    protected function doAddCompras($compras)
+    {
+        $this->collComprass[]= $compras;
+        $compras->setProducto($this);
+    }
+
+    /**
+     * @param	Compras $compras The compras object to remove.
+     * @return Producto The current object (for fluent API support)
+     */
+    public function removeCompras($compras)
+    {
+        if ($this->getComprass()->contains($compras)) {
+            $this->collComprass->remove($this->collComprass->search($compras));
+            if (null === $this->comprassScheduledForDeletion) {
+                $this->comprassScheduledForDeletion = clone $this->collComprass;
+                $this->comprassScheduledForDeletion->clear();
+            }
+            $this->comprassScheduledForDeletion[]= $compras;
+            $compras->setProducto(null);
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Producto is new, it will return
+     * an empty collection; or if this Producto has previously
+     * been saved, it will retrieve related Comprass from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Producto.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|Compras[] List of Compras objects
+     */
+    public function getComprassJoinProveedor($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = ComprasQuery::create(null, $criteria);
+        $query->joinWith('Proveedor', $join_behavior);
+
+        return $this->getComprass($query, $con);
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Producto is new, it will return
+     * an empty collection; or if this Producto has previously
+     * been saved, it will retrieve related Comprass from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Producto.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|Compras[] List of Compras objects
+     */
+    public function getComprassJoinFactura($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = ComprasQuery::create(null, $criteria);
+        $query->joinWith('Factura', $join_behavior);
+
+        return $this->getComprass($query, $con);
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Producto is new, it will return
+     * an empty collection; or if this Producto has previously
+     * been saved, it will retrieve related Comprass from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Producto.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|Compras[] List of Compras objects
+     */
+    public function getComprassJoinInventario($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = ComprasQuery::create(null, $criteria);
+        $query->joinWith('Inventario', $join_behavior);
+
+        return $this->getComprass($query, $con);
+    }
+
+    /**
+     * Clears out the collFacturaDetalles collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Producto The current object (for fluent API support)
+     * @see        addFacturaDetalles()
+     */
+    public function clearFacturaDetalles()
+    {
+        $this->collFacturaDetalles = null; // important to set this to null since that means it is uninitialized
+        $this->collFacturaDetallesPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collFacturaDetalles collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialFacturaDetalles($v = true)
+    {
+        $this->collFacturaDetallesPartial = $v;
+    }
+
+    /**
+     * Initializes the collFacturaDetalles collection.
+     *
+     * By default this just sets the collFacturaDetalles collection to an empty array (like clearcollFacturaDetalles());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initFacturaDetalles($overrideExisting = true)
+    {
+        if (null !== $this->collFacturaDetalles && !$overrideExisting) {
+            return;
+        }
+        $this->collFacturaDetalles = new PropelObjectCollection();
+        $this->collFacturaDetalles->setModel('FacturaDetalle');
+    }
+
+    /**
+     * Gets an array of FacturaDetalle objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Producto is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|FacturaDetalle[] List of FacturaDetalle objects
+     * @throws PropelException
+     */
+    public function getFacturaDetalles($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collFacturaDetallesPartial && !$this->isNew();
+        if (null === $this->collFacturaDetalles || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collFacturaDetalles) {
+                // return empty collection
+                $this->initFacturaDetalles();
+            } else {
+                $collFacturaDetalles = FacturaDetalleQuery::create(null, $criteria)
+                    ->filterByProducto($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collFacturaDetallesPartial && count($collFacturaDetalles)) {
+                      $this->initFacturaDetalles(false);
+
+                      foreach ($collFacturaDetalles as $obj) {
+                        if (false == $this->collFacturaDetalles->contains($obj)) {
+                          $this->collFacturaDetalles->append($obj);
+                        }
+                      }
+
+                      $this->collFacturaDetallesPartial = true;
+                    }
+
+                    $collFacturaDetalles->getInternalIterator()->rewind();
+
+                    return $collFacturaDetalles;
+                }
+
+                if ($partial && $this->collFacturaDetalles) {
+                    foreach ($this->collFacturaDetalles as $obj) {
+                        if ($obj->isNew()) {
+                            $collFacturaDetalles[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collFacturaDetalles = $collFacturaDetalles;
+                $this->collFacturaDetallesPartial = false;
+            }
+        }
+
+        return $this->collFacturaDetalles;
+    }
+
+    /**
+     * Sets a collection of FacturaDetalle objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $facturaDetalles A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Producto The current object (for fluent API support)
+     */
+    public function setFacturaDetalles(PropelCollection $facturaDetalles, PropelPDO $con = null)
+    {
+        $facturaDetallesToDelete = $this->getFacturaDetalles(new Criteria(), $con)->diff($facturaDetalles);
+
+
+        $this->facturaDetallesScheduledForDeletion = $facturaDetallesToDelete;
+
+        foreach ($facturaDetallesToDelete as $facturaDetalleRemoved) {
+            $facturaDetalleRemoved->setProducto(null);
+        }
+
+        $this->collFacturaDetalles = null;
+        foreach ($facturaDetalles as $facturaDetalle) {
+            $this->addFacturaDetalle($facturaDetalle);
+        }
+
+        $this->collFacturaDetalles = $facturaDetalles;
+        $this->collFacturaDetallesPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related FacturaDetalle objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related FacturaDetalle objects.
+     * @throws PropelException
+     */
+    public function countFacturaDetalles(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collFacturaDetallesPartial && !$this->isNew();
+        if (null === $this->collFacturaDetalles || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collFacturaDetalles) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getFacturaDetalles());
+            }
+            $query = FacturaDetalleQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByProducto($this)
+                ->count($con);
+        }
+
+        return count($this->collFacturaDetalles);
+    }
+
+    /**
+     * Method called to associate a FacturaDetalle object to this object
+     * through the FacturaDetalle foreign key attribute.
+     *
+     * @param    FacturaDetalle $l FacturaDetalle
+     * @return Producto The current object (for fluent API support)
+     */
+    public function addFacturaDetalle(FacturaDetalle $l)
+    {
+        if ($this->collFacturaDetalles === null) {
+            $this->initFacturaDetalles();
+            $this->collFacturaDetallesPartial = true;
+        }
+
+        if (!in_array($l, $this->collFacturaDetalles->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddFacturaDetalle($l);
+
+            if ($this->facturaDetallesScheduledForDeletion and $this->facturaDetallesScheduledForDeletion->contains($l)) {
+                $this->facturaDetallesScheduledForDeletion->remove($this->facturaDetallesScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	FacturaDetalle $facturaDetalle The facturaDetalle object to add.
+     */
+    protected function doAddFacturaDetalle($facturaDetalle)
+    {
+        $this->collFacturaDetalles[]= $facturaDetalle;
+        $facturaDetalle->setProducto($this);
+    }
+
+    /**
+     * @param	FacturaDetalle $facturaDetalle The facturaDetalle object to remove.
+     * @return Producto The current object (for fluent API support)
+     */
+    public function removeFacturaDetalle($facturaDetalle)
+    {
+        if ($this->getFacturaDetalles()->contains($facturaDetalle)) {
+            $this->collFacturaDetalles->remove($this->collFacturaDetalles->search($facturaDetalle));
+            if (null === $this->facturaDetallesScheduledForDeletion) {
+                $this->facturaDetallesScheduledForDeletion = clone $this->collFacturaDetalles;
+                $this->facturaDetallesScheduledForDeletion->clear();
+            }
+            $this->facturaDetallesScheduledForDeletion[]= $facturaDetalle;
+            $facturaDetalle->setProducto(null);
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Producto is new, it will return
+     * an empty collection; or if this Producto has previously
+     * been saved, it will retrieve related FacturaDetalles from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Producto.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|FacturaDetalle[] List of FacturaDetalle objects
+     */
+    public function getFacturaDetallesJoinFactura($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = FacturaDetalleQuery::create(null, $criteria);
+        $query->joinWith('Factura', $join_behavior);
+
+        return $this->getFacturaDetalles($query, $con);
+    }
+
+    /**
+     * Clears out the collInventarios collection
+     *
+     * This does not modify the database; however, it will remove any associated objects, causing
+     * them to be refetched by subsequent calls to accessor method.
+     *
+     * @return Producto The current object (for fluent API support)
+     * @see        addInventarios()
+     */
+    public function clearInventarios()
+    {
+        $this->collInventarios = null; // important to set this to null since that means it is uninitialized
+        $this->collInventariosPartial = null;
+
+        return $this;
+    }
+
+    /**
+     * reset is the collInventarios collection loaded partially
+     *
+     * @return void
+     */
+    public function resetPartialInventarios($v = true)
+    {
+        $this->collInventariosPartial = $v;
+    }
+
+    /**
+     * Initializes the collInventarios collection.
+     *
+     * By default this just sets the collInventarios collection to an empty array (like clearcollInventarios());
+     * however, you may wish to override this method in your stub class to provide setting appropriate
+     * to your application -- for example, setting the initial array to the values stored in database.
+     *
+     * @param boolean $overrideExisting If set to true, the method call initializes
+     *                                        the collection even if it is not empty
+     *
+     * @return void
+     */
+    public function initInventarios($overrideExisting = true)
+    {
+        if (null !== $this->collInventarios && !$overrideExisting) {
+            return;
+        }
+        $this->collInventarios = new PropelObjectCollection();
+        $this->collInventarios->setModel('Inventario');
+    }
+
+    /**
+     * Gets an array of Inventario objects which contain a foreign key that references this object.
+     *
+     * If the $criteria is not null, it is used to always fetch the results from the database.
+     * Otherwise the results are fetched from the database the first time, then cached.
+     * Next time the same method is called without $criteria, the cached collection is returned.
+     * If this Producto is new, it will return
+     * an empty collection or the current collection; the criteria is ignored on a new object.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @return PropelObjectCollection|Inventario[] List of Inventario objects
+     * @throws PropelException
+     */
+    public function getInventarios($criteria = null, PropelPDO $con = null)
+    {
+        $partial = $this->collInventariosPartial && !$this->isNew();
+        if (null === $this->collInventarios || null !== $criteria  || $partial) {
+            if ($this->isNew() && null === $this->collInventarios) {
+                // return empty collection
+                $this->initInventarios();
+            } else {
+                $collInventarios = InventarioQuery::create(null, $criteria)
+                    ->filterByProducto($this)
+                    ->find($con);
+                if (null !== $criteria) {
+                    if (false !== $this->collInventariosPartial && count($collInventarios)) {
+                      $this->initInventarios(false);
+
+                      foreach ($collInventarios as $obj) {
+                        if (false == $this->collInventarios->contains($obj)) {
+                          $this->collInventarios->append($obj);
+                        }
+                      }
+
+                      $this->collInventariosPartial = true;
+                    }
+
+                    $collInventarios->getInternalIterator()->rewind();
+
+                    return $collInventarios;
+                }
+
+                if ($partial && $this->collInventarios) {
+                    foreach ($this->collInventarios as $obj) {
+                        if ($obj->isNew()) {
+                            $collInventarios[] = $obj;
+                        }
+                    }
+                }
+
+                $this->collInventarios = $collInventarios;
+                $this->collInventariosPartial = false;
+            }
+        }
+
+        return $this->collInventarios;
+    }
+
+    /**
+     * Sets a collection of Inventario objects related by a one-to-many relationship
+     * to the current object.
+     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
+     * and new objects from the given Propel collection.
+     *
+     * @param PropelCollection $inventarios A Propel collection.
+     * @param PropelPDO $con Optional connection object
+     * @return Producto The current object (for fluent API support)
+     */
+    public function setInventarios(PropelCollection $inventarios, PropelPDO $con = null)
+    {
+        $inventariosToDelete = $this->getInventarios(new Criteria(), $con)->diff($inventarios);
+
+
+        $this->inventariosScheduledForDeletion = $inventariosToDelete;
+
+        foreach ($inventariosToDelete as $inventarioRemoved) {
+            $inventarioRemoved->setProducto(null);
+        }
+
+        $this->collInventarios = null;
+        foreach ($inventarios as $inventario) {
+            $this->addInventario($inventario);
+        }
+
+        $this->collInventarios = $inventarios;
+        $this->collInventariosPartial = false;
+
+        return $this;
+    }
+
+    /**
+     * Returns the number of related Inventario objects.
+     *
+     * @param Criteria $criteria
+     * @param boolean $distinct
+     * @param PropelPDO $con
+     * @return int             Count of related Inventario objects.
+     * @throws PropelException
+     */
+    public function countInventarios(Criteria $criteria = null, $distinct = false, PropelPDO $con = null)
+    {
+        $partial = $this->collInventariosPartial && !$this->isNew();
+        if (null === $this->collInventarios || null !== $criteria || $partial) {
+            if ($this->isNew() && null === $this->collInventarios) {
+                return 0;
+            }
+
+            if ($partial && !$criteria) {
+                return count($this->getInventarios());
+            }
+            $query = InventarioQuery::create(null, $criteria);
+            if ($distinct) {
+                $query->distinct();
+            }
+
+            return $query
+                ->filterByProducto($this)
+                ->count($con);
+        }
+
+        return count($this->collInventarios);
+    }
+
+    /**
+     * Method called to associate a Inventario object to this object
+     * through the Inventario foreign key attribute.
+     *
+     * @param    Inventario $l Inventario
+     * @return Producto The current object (for fluent API support)
+     */
+    public function addInventario(Inventario $l)
+    {
+        if ($this->collInventarios === null) {
+            $this->initInventarios();
+            $this->collInventariosPartial = true;
+        }
+
+        if (!in_array($l, $this->collInventarios->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
+            $this->doAddInventario($l);
+
+            if ($this->inventariosScheduledForDeletion and $this->inventariosScheduledForDeletion->contains($l)) {
+                $this->inventariosScheduledForDeletion->remove($this->inventariosScheduledForDeletion->search($l));
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param	Inventario $inventario The inventario object to add.
+     */
+    protected function doAddInventario($inventario)
+    {
+        $this->collInventarios[]= $inventario;
+        $inventario->setProducto($this);
+    }
+
+    /**
+     * @param	Inventario $inventario The inventario object to remove.
+     * @return Producto The current object (for fluent API support)
+     */
+    public function removeInventario($inventario)
+    {
+        if ($this->getInventarios()->contains($inventario)) {
+            $this->collInventarios->remove($this->collInventarios->search($inventario));
+            if (null === $this->inventariosScheduledForDeletion) {
+                $this->inventariosScheduledForDeletion = clone $this->collInventarios;
+                $this->inventariosScheduledForDeletion->clear();
+            }
+            $this->inventariosScheduledForDeletion[]= $inventario;
+            $inventario->setProducto(null);
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * If this collection has already been initialized with
+     * an identical criteria, it returns the collection.
+     * Otherwise if this Producto is new, it will return
+     * an empty collection; or if this Producto has previously
+     * been saved, it will retrieve related Inventarios from storage.
+     *
+     * This method is protected by default in order to keep the public
+     * api reasonable.  You can provide public methods for those you
+     * actually need in Producto.
+     *
+     * @param Criteria $criteria optional Criteria object to narrow the query
+     * @param PropelPDO $con optional connection object
+     * @param string $join_behavior optional join type to use (defaults to Criteria::LEFT_JOIN)
+     * @return PropelObjectCollection|Inventario[] List of Inventario objects
+     */
+    public function getInventariosJoinProveedor($criteria = null, $con = null, $join_behavior = Criteria::LEFT_JOIN)
+    {
+        $query = InventarioQuery::create(null, $criteria);
+        $query->joinWith('Proveedor', $join_behavior);
+
+        return $this->getInventarios($query, $con);
+    }
+
     /**
      * Clears the current object and sets all attributes to their default values
      */
@@ -1055,7 +2032,7 @@ abstract class BaseProducto extends BaseObject implements Persistent
     {
         $this->id = null;
         $this->nombre = null;
-        $this->precio = null;
+        $this->precio_unitario = null;
         $this->descripcion = null;
         $this->categoria_id = null;
         $this->alreadyInSave = false;
@@ -1080,6 +2057,21 @@ abstract class BaseProducto extends BaseObject implements Persistent
     {
         if ($deep && !$this->alreadyInClearAllReferencesDeep) {
             $this->alreadyInClearAllReferencesDeep = true;
+            if ($this->collComprass) {
+                foreach ($this->collComprass as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
+            if ($this->collFacturaDetalles) {
+                foreach ($this->collFacturaDetalles as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
+            if ($this->collInventarios) {
+                foreach ($this->collInventarios as $o) {
+                    $o->clearAllReferences($deep);
+                }
+            }
             if ($this->aCategoria instanceof Persistent) {
               $this->aCategoria->clearAllReferences($deep);
             }
@@ -1087,6 +2079,18 @@ abstract class BaseProducto extends BaseObject implements Persistent
             $this->alreadyInClearAllReferencesDeep = false;
         } // if ($deep)
 
+        if ($this->collComprass instanceof PropelCollection) {
+            $this->collComprass->clearIterator();
+        }
+        $this->collComprass = null;
+        if ($this->collFacturaDetalles instanceof PropelCollection) {
+            $this->collFacturaDetalles->clearIterator();
+        }
+        $this->collFacturaDetalles = null;
+        if ($this->collInventarios instanceof PropelCollection) {
+            $this->collInventarios->clearIterator();
+        }
+        $this->collInventarios = null;
         $this->aCategoria = null;
     }
 

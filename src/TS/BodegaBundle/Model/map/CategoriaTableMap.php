@@ -45,6 +45,8 @@ class CategoriaTableMap extends TableMap
         $this->addPrimaryKey('id', 'Id', 'INTEGER', true, null, null);
         $this->addColumn('nombre', 'Nombre', 'VARCHAR', false, 100, null);
         $this->getColumn('nombre', false)->setPrimaryString(true);
+        $this->addColumn('descripcion', 'Descripcion', 'VARCHAR', false, 100, null);
+        $this->getColumn('descripcion', false)->setPrimaryString(true);
         // validators
     } // initialize()
 

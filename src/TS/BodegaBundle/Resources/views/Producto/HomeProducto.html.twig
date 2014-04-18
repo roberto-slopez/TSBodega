@@ -1,25 +1,22 @@
 {% extends "::base.html.twig" %}
 {% block body %}
-<div class="panel panel-default">
+<div class="panel panel-info">
       <div class="panel-heading">
+          <h4>
           Productos Disponibles
-          <a class="btn btn-primary btn-xs pull-right" href="{{ path('ts_new_producto') }}">Nuevo</a>
+          <a class="btn btn-primary btn-sm pull-right" href="{{ path('ts_new_producto') }}">Nuevo</a>
+          </h4>
       </div>
       <div class="panel-body">
         <table class="table table-bordered" id="datatable">
         <thead>
                 <tr>
                     <th>Nombres</th>
-                    <th>Precio</th>
-                    <th>Descripcion</th>
+                    <th>Descripción</th>
+                    <th>Precio Unitario</th>
                     <th>Categoria</th>
                 </tr>
             </thead>
-            <tfoot>
-                <tr>
-                    <td></td>
-                </tr>
-            </tfoot>
             <tbody>
                 {% for dato in datos %}
                 <tr>
@@ -27,7 +24,7 @@
                         <a href="{{ path('ts_edit_producto', {'id': dato.id }) }}">{{dato.nombre}}</a>
                     </td>
                     <td>{{dato.descripcion}}</td>
-                    <td>{{dato.precio}}</td>
+                    <td>{{dato.precioUnitario }}</td>
                     <td>{{dato.categoria.nombre}}</td>
                 </tr>
                  {% endfor %}

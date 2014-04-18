@@ -13,6 +13,9 @@ use \PropelException;
 use \PropelObjectCollection;
 use \PropelPDO;
 use TS\BodegaBundle\Model\Categoria;
+use TS\BodegaBundle\Model\Compras;
+use TS\BodegaBundle\Model\FacturaDetalle;
+use TS\BodegaBundle\Model\Inventario;
 use TS\BodegaBundle\Model\Producto;
 use TS\BodegaBundle\Model\ProductoPeer;
 use TS\BodegaBundle\Model\ProductoQuery;
@@ -20,13 +23,13 @@ use TS\BodegaBundle\Model\ProductoQuery;
 /**
  * @method ProductoQuery orderById($order = Criteria::ASC) Order by the id column
  * @method ProductoQuery orderByNombre($order = Criteria::ASC) Order by the nombre column
- * @method ProductoQuery orderByPrecio($order = Criteria::ASC) Order by the precio column
+ * @method ProductoQuery orderByPrecioUnitario($order = Criteria::ASC) Order by the precio_unitario column
  * @method ProductoQuery orderByDescripcion($order = Criteria::ASC) Order by the descripcion column
  * @method ProductoQuery orderByCategoriaId($order = Criteria::ASC) Order by the categoria_id column
  *
  * @method ProductoQuery groupById() Group by the id column
  * @method ProductoQuery groupByNombre() Group by the nombre column
- * @method ProductoQuery groupByPrecio() Group by the precio column
+ * @method ProductoQuery groupByPrecioUnitario() Group by the precio_unitario column
  * @method ProductoQuery groupByDescripcion() Group by the descripcion column
  * @method ProductoQuery groupByCategoriaId() Group by the categoria_id column
  *
@@ -38,17 +41,29 @@ use TS\BodegaBundle\Model\ProductoQuery;
  * @method ProductoQuery rightJoinCategoria($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Categoria relation
  * @method ProductoQuery innerJoinCategoria($relationAlias = null) Adds a INNER JOIN clause to the query using the Categoria relation
  *
+ * @method ProductoQuery leftJoinCompras($relationAlias = null) Adds a LEFT JOIN clause to the query using the Compras relation
+ * @method ProductoQuery rightJoinCompras($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Compras relation
+ * @method ProductoQuery innerJoinCompras($relationAlias = null) Adds a INNER JOIN clause to the query using the Compras relation
+ *
+ * @method ProductoQuery leftJoinFacturaDetalle($relationAlias = null) Adds a LEFT JOIN clause to the query using the FacturaDetalle relation
+ * @method ProductoQuery rightJoinFacturaDetalle($relationAlias = null) Adds a RIGHT JOIN clause to the query using the FacturaDetalle relation
+ * @method ProductoQuery innerJoinFacturaDetalle($relationAlias = null) Adds a INNER JOIN clause to the query using the FacturaDetalle relation
+ *
+ * @method ProductoQuery leftJoinInventario($relationAlias = null) Adds a LEFT JOIN clause to the query using the Inventario relation
+ * @method ProductoQuery rightJoinInventario($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Inventario relation
+ * @method ProductoQuery innerJoinInventario($relationAlias = null) Adds a INNER JOIN clause to the query using the Inventario relation
+ *
  * @method Producto findOne(PropelPDO $con = null) Return the first Producto matching the query
  * @method Producto findOneOrCreate(PropelPDO $con = null) Return the first Producto matching the query, or a new Producto object populated from the query conditions when no match is found
  *
  * @method Producto findOneByNombre(string $nombre) Return the first Producto filtered by the nombre column
- * @method Producto findOneByPrecio(string $precio) Return the first Producto filtered by the precio column
+ * @method Producto findOneByPrecioUnitario(string $precio_unitario) Return the first Producto filtered by the precio_unitario column
  * @method Producto findOneByDescripcion(string $descripcion) Return the first Producto filtered by the descripcion column
  * @method Producto findOneByCategoriaId(int $categoria_id) Return the first Producto filtered by the categoria_id column
  *
  * @method array findById(int $id) Return Producto objects filtered by the id column
  * @method array findByNombre(string $nombre) Return Producto objects filtered by the nombre column
- * @method array findByPrecio(string $precio) Return Producto objects filtered by the precio column
+ * @method array findByPrecioUnitario(string $precio_unitario) Return Producto objects filtered by the precio_unitario column
  * @method array findByDescripcion(string $descripcion) Return Producto objects filtered by the descripcion column
  * @method array findByCategoriaId(int $categoria_id) Return Producto objects filtered by the categoria_id column
  */
@@ -156,7 +171,7 @@ abstract class BaseProductoQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT `id`, `nombre`, `precio`, `descripcion`, `categoria_id` FROM `producto` WHERE `id` = :p0';
+        $sql = 'SELECT `id`, `nombre`, `precio_unitario`, `descripcion`, `categoria_id` FROM `producto` WHERE `id` = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -317,17 +332,17 @@ abstract class BaseProductoQuery extends ModelCriteria
     }
 
     /**
-     * Filter the query on the precio column
+     * Filter the query on the precio_unitario column
      *
      * Example usage:
      * <code>
-     * $query->filterByPrecio(1234); // WHERE precio = 1234
-     * $query->filterByPrecio(array(12, 34)); // WHERE precio IN (12, 34)
-     * $query->filterByPrecio(array('min' => 12)); // WHERE precio >= 12
-     * $query->filterByPrecio(array('max' => 12)); // WHERE precio <= 12
+     * $query->filterByPrecioUnitario(1234); // WHERE precio_unitario = 1234
+     * $query->filterByPrecioUnitario(array(12, 34)); // WHERE precio_unitario IN (12, 34)
+     * $query->filterByPrecioUnitario(array('min' => 12)); // WHERE precio_unitario >= 12
+     * $query->filterByPrecioUnitario(array('max' => 12)); // WHERE precio_unitario <= 12
      * </code>
      *
-     * @param     mixed $precio The value to use as filter.
+     * @param     mixed $precioUnitario The value to use as filter.
      *              Use scalar values for equality.
      *              Use array values for in_array() equivalent.
      *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
@@ -335,16 +350,16 @@ abstract class BaseProductoQuery extends ModelCriteria
      *
      * @return ProductoQuery The current query, for fluid interface
      */
-    public function filterByPrecio($precio = null, $comparison = null)
+    public function filterByPrecioUnitario($precioUnitario = null, $comparison = null)
     {
-        if (is_array($precio)) {
+        if (is_array($precioUnitario)) {
             $useMinMax = false;
-            if (isset($precio['min'])) {
-                $this->addUsingAlias(ProductoPeer::PRECIO, $precio['min'], Criteria::GREATER_EQUAL);
+            if (isset($precioUnitario['min'])) {
+                $this->addUsingAlias(ProductoPeer::PRECIO_UNITARIO, $precioUnitario['min'], Criteria::GREATER_EQUAL);
                 $useMinMax = true;
             }
-            if (isset($precio['max'])) {
-                $this->addUsingAlias(ProductoPeer::PRECIO, $precio['max'], Criteria::LESS_EQUAL);
+            if (isset($precioUnitario['max'])) {
+                $this->addUsingAlias(ProductoPeer::PRECIO_UNITARIO, $precioUnitario['max'], Criteria::LESS_EQUAL);
                 $useMinMax = true;
             }
             if ($useMinMax) {
@@ -355,7 +370,7 @@ abstract class BaseProductoQuery extends ModelCriteria
             }
         }
 
-        return $this->addUsingAlias(ProductoPeer::PRECIO, $precio, $comparison);
+        return $this->addUsingAlias(ProductoPeer::PRECIO_UNITARIO, $precioUnitario, $comparison);
     }
 
     /**
@@ -505,6 +520,228 @@ abstract class BaseProductoQuery extends ModelCriteria
         return $this
             ->joinCategoria($relationAlias, $joinType)
             ->useQuery($relationAlias ? $relationAlias : 'Categoria', '\TS\BodegaBundle\Model\CategoriaQuery');
+    }
+
+    /**
+     * Filter the query by a related Compras object
+     *
+     * @param   Compras|PropelObjectCollection $compras  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 ProductoQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByCompras($compras, $comparison = null)
+    {
+        if ($compras instanceof Compras) {
+            return $this
+                ->addUsingAlias(ProductoPeer::ID, $compras->getProductoId(), $comparison);
+        } elseif ($compras instanceof PropelObjectCollection) {
+            return $this
+                ->useComprasQuery()
+                ->filterByPrimaryKeys($compras->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByCompras() only accepts arguments of type Compras or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Compras relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return ProductoQuery The current query, for fluid interface
+     */
+    public function joinCompras($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Compras');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Compras');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Compras relation Compras object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \TS\BodegaBundle\Model\ComprasQuery A secondary query class using the current class as primary query
+     */
+    public function useComprasQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinCompras($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Compras', '\TS\BodegaBundle\Model\ComprasQuery');
+    }
+
+    /**
+     * Filter the query by a related FacturaDetalle object
+     *
+     * @param   FacturaDetalle|PropelObjectCollection $facturaDetalle  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 ProductoQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByFacturaDetalle($facturaDetalle, $comparison = null)
+    {
+        if ($facturaDetalle instanceof FacturaDetalle) {
+            return $this
+                ->addUsingAlias(ProductoPeer::ID, $facturaDetalle->getProductoId(), $comparison);
+        } elseif ($facturaDetalle instanceof PropelObjectCollection) {
+            return $this
+                ->useFacturaDetalleQuery()
+                ->filterByPrimaryKeys($facturaDetalle->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByFacturaDetalle() only accepts arguments of type FacturaDetalle or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the FacturaDetalle relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return ProductoQuery The current query, for fluid interface
+     */
+    public function joinFacturaDetalle($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('FacturaDetalle');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'FacturaDetalle');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the FacturaDetalle relation FacturaDetalle object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \TS\BodegaBundle\Model\FacturaDetalleQuery A secondary query class using the current class as primary query
+     */
+    public function useFacturaDetalleQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinFacturaDetalle($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'FacturaDetalle', '\TS\BodegaBundle\Model\FacturaDetalleQuery');
+    }
+
+    /**
+     * Filter the query by a related Inventario object
+     *
+     * @param   Inventario|PropelObjectCollection $inventario  the related object to use as filter
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return                 ProductoQuery The current query, for fluid interface
+     * @throws PropelException - if the provided filter is invalid.
+     */
+    public function filterByInventario($inventario, $comparison = null)
+    {
+        if ($inventario instanceof Inventario) {
+            return $this
+                ->addUsingAlias(ProductoPeer::ID, $inventario->getProductoId(), $comparison);
+        } elseif ($inventario instanceof PropelObjectCollection) {
+            return $this
+                ->useInventarioQuery()
+                ->filterByPrimaryKeys($inventario->getPrimaryKeys())
+                ->endUse();
+        } else {
+            throw new PropelException('filterByInventario() only accepts arguments of type Inventario or PropelCollection');
+        }
+    }
+
+    /**
+     * Adds a JOIN clause to the query using the Inventario relation
+     *
+     * @param     string $relationAlias optional alias for the relation
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return ProductoQuery The current query, for fluid interface
+     */
+    public function joinInventario($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        $tableMap = $this->getTableMap();
+        $relationMap = $tableMap->getRelation('Inventario');
+
+        // create a ModelJoin object for this join
+        $join = new ModelJoin();
+        $join->setJoinType($joinType);
+        $join->setRelationMap($relationMap, $this->useAliasInSQL ? $this->getModelAlias() : null, $relationAlias);
+        if ($previousJoin = $this->getPreviousJoin()) {
+            $join->setPreviousJoin($previousJoin);
+        }
+
+        // add the ModelJoin to the current object
+        if ($relationAlias) {
+            $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
+            $this->addJoinObject($join, $relationAlias);
+        } else {
+            $this->addJoinObject($join, 'Inventario');
+        }
+
+        return $this;
+    }
+
+    /**
+     * Use the Inventario relation Inventario object
+     *
+     * @see       useQuery()
+     *
+     * @param     string $relationAlias optional alias for the relation,
+     *                                   to be used as main alias in the secondary query
+     * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
+     *
+     * @return   \TS\BodegaBundle\Model\InventarioQuery A secondary query class using the current class as primary query
+     */
+    public function useInventarioQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    {
+        return $this
+            ->joinInventario($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Inventario', '\TS\BodegaBundle\Model\InventarioQuery');
     }
 
     /**

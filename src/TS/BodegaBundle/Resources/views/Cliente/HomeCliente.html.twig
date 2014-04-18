@@ -1,9 +1,11 @@
 {% extends "::base.html.twig" %}
 {% block body %}
-<div class="panel panel-default">
+<div class="panel panel-info">
       <div class="panel-heading">
-          Clientes Disponibles
-          <a class="btn btn-primary btn-xs pull-right" href="{{ path('ts_new_cliente') }}">Nuevo</a>
+          <h4>
+              Clientes Disponibles
+              <a class="btn btn-primary btn-sm pull-right" href="{{ path('ts_new_cliente') }}">Nuevo</a>
+          </h4>
       </div>
       <div class="panel-body">
         <table class="table table-bordered" id="datatable">
@@ -18,11 +20,6 @@
                     <th>Dirección</th>
                 </tr>
             </thead>
-            <tfoot>
-                <tr>
-                    <td>Clientes</td>
-                </tr>
-            </tfoot>
             <tbody>
                 {% for dato in datos %}
                 <tr>

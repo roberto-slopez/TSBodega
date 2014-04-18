@@ -1,0 +1,45 @@
+{% extends "::base.html.twig" %}
+{% block body %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3>Agregar Preoveedor</h3>
+                </div>
+                <div class="panel-body">
+                    <form action="{{ path('ts_new_proveedor') }}" method="post" {{ form_enctype(form) }} role="form">
+                        <div class="form-group">
+                            {{ form_widget(form._token) }}
+                            {{ form_label(form.nombre, 'Nombre:') }}
+                            {{ form_widget(form.nombre, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.encargado, 'Nombre del encargado:') }}
+                            {{ form_widget(form.encargado, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.nit, 'Nit:') }}
+                            {{ form_widget(form.nit, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.direccion, 'Dirección:') }}
+                            {{ form_widget(form.direccion, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.telefono, 'Tel:') }}
+                            {{ form_widget(form.telefono, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.movil, 'Celular:') }}
+                            {{ form_widget(form.movil, { 'attr': {'class': 'form-control'} }) }}
+                        </div>
+                        <div class="form-group">
+                            <a  class="btn btn-danger btn-sm" href="{{ path('ts_home_proveedor') }}">Retorno</a>
+                            <input type="submit" value="Guardar" class="btn btn-primary btn-sm" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

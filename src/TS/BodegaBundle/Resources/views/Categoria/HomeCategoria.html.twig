@@ -1,9 +1,11 @@
 {% extends "::base.html.twig" %}
 {% block body %}
-<div class="panel panel-default">
+<div class="panel panel-info">
       <div class="panel-heading">
-          Categorias Disponibles
-          <a class="btn btn-primary btn-xs pull-right" href="{{ path('ts_new_categoria') }}">Nuevo</a>
+          <h4>
+              Categorias Disponibles
+              <a class="btn btn-primary btn-sm pull-right" href="{{ path('ts_new_categoria') }}">Nuevo</a>
+          </h4>
       </div>
       <div class="panel-body">
         <table class="table table-bordered" id="datatable">
@@ -11,6 +13,7 @@
             <tr>
                 <th>No</th>
                 <th>Nombre</th>
+                <th>Descripción</th>
             </tr>
         </thead>
         <tbody>
@@ -19,6 +22,9 @@
                 <td>{{dato.id}}</td>
                 <td>
                     <a href="{{ path('ts_edit_categoria', {'id': dato.id }) }}">{{dato.nombre}}</a>
+                </td>
+                <td>
+                    {{dato.descripcion}}
                 </td>
             </tr>
              {% endfor %}

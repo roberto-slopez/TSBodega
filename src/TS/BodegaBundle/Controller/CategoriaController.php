@@ -42,6 +42,10 @@ class CategoriaController extends Controller
 
             if ($form->isValid()) {
                 $newCategoria->save();
+                $this->get('session')->getFlashBag()->add(
+                    'exito',
+                    'La categoria: '.$newCategoria->getNombre().' de actualizo con exito'
+                );
                 return $this->redirect($this->generateUrl('ts_home_categoria'));
             }
         }

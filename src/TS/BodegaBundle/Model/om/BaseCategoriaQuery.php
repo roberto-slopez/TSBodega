@@ -20,9 +20,11 @@ use TS\BodegaBundle\Model\Producto;
 /**
  * @method CategoriaQuery orderById($order = Criteria::ASC) Order by the id column
  * @method CategoriaQuery orderByNombre($order = Criteria::ASC) Order by the nombre column
+ * @method CategoriaQuery orderByDescripcion($order = Criteria::ASC) Order by the descripcion column
  *
  * @method CategoriaQuery groupById() Group by the id column
  * @method CategoriaQuery groupByNombre() Group by the nombre column
+ * @method CategoriaQuery groupByDescripcion() Group by the descripcion column
  *
  * @method CategoriaQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method CategoriaQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
@@ -36,9 +38,11 @@ use TS\BodegaBundle\Model\Producto;
  * @method Categoria findOneOrCreate(PropelPDO $con = null) Return the first Categoria matching the query, or a new Categoria object populated from the query conditions when no match is found
  *
  * @method Categoria findOneByNombre(string $nombre) Return the first Categoria filtered by the nombre column
+ * @method Categoria findOneByDescripcion(string $descripcion) Return the first Categoria filtered by the descripcion column
  *
  * @method array findById(int $id) Return Categoria objects filtered by the id column
  * @method array findByNombre(string $nombre) Return Categoria objects filtered by the nombre column
+ * @method array findByDescripcion(string $descripcion) Return Categoria objects filtered by the descripcion column
  */
 abstract class BaseCategoriaQuery extends ModelCriteria
 {
@@ -144,7 +148,7 @@ abstract class BaseCategoriaQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT `id`, `nombre` FROM `categoria` WHERE `id` = :p0';
+        $sql = 'SELECT `id`, `nombre`, `descripcion` FROM `categoria` WHERE `id` = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -302,6 +306,35 @@ abstract class BaseCategoriaQuery extends ModelCriteria
         }
 
         return $this->addUsingAlias(CategoriaPeer::NOMBRE, $nombre, $comparison);
+    }
+
+    /**
+     * Filter the query on the descripcion column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByDescripcion('fooValue');   // WHERE descripcion = 'fooValue'
+     * $query->filterByDescripcion('%fooValue%'); // WHERE descripcion LIKE '%fooValue%'
+     * </code>
+     *
+     * @param     string $descripcion The value to use as filter.
+     *              Accepts wildcards (* and % trigger a LIKE)
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return CategoriaQuery The current query, for fluid interface
+     */
+    public function filterByDescripcion($descripcion = null, $comparison = null)
+    {
+        if (null === $comparison) {
+            if (is_array($descripcion)) {
+                $comparison = Criteria::IN;
+            } elseif (preg_match('/[\%\*]/', $descripcion)) {
+                $descripcion = str_replace('*', '%', $descripcion);
+                $comparison = Criteria::LIKE;
+            }
+        }
+
+        return $this->addUsingAlias(CategoriaPeer::DESCRIPCION, $descripcion, $comparison);
     }
 
     /**
