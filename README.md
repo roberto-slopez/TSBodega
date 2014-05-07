@@ -26,7 +26,7 @@ TODO: mejorar tablas en el schema.xml
 
 <ul>
 	<li>Participantes:</li>
-	<q>NONE</q>
+	<q>1</q>
 </ul>
 
-<b>PowerBy: TS</b>
+<b>PowerBy: TS (@Eldin_SLopez)</b>
