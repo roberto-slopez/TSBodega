@@ -20,7 +20,7 @@ class AppKernel extends Kernel
             new FOS\UserBundle\FOSUserBundle(),
             //new Admingenerator\GeneratorBundle\AdmingeneratorGeneratorBundle(),
             new Knp\Bundle\MenuBundle\KnpMenuBundle(),
-            new WhiteOctober\PagerfantaBundle\WhiteOctoberPagerfantaBundle(),
+            //new WhiteOctober\PagerfantaBundle\WhiteOctoberPagerfantaBundle(),
             //new Sonata\PropelAdminBundle\SonataPropelAdminBundle(),
             new TS\BodegaBundle\TSBodegaBundle(),
         );
