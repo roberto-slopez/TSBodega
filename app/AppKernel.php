@@ -18,11 +18,11 @@ class AppKernel extends Kernel
             new Sensio\Bundle\FrameworkExtraBundle\SensioFrameworkExtraBundle(),
             new Propel\PropelBundle\PropelBundle(),
             new FOS\UserBundle\FOSUserBundle(),
-            //new Admingenerator\GeneratorBundle\AdmingeneratorGeneratorBundle(),
+            new TS\BodegaBundle\TSBodegaBundle(),
             new Knp\Bundle\MenuBundle\KnpMenuBundle(),
+            //new Admingenerator\GeneratorBundle\AdmingeneratorGeneratorBundle(),
             //new WhiteOctober\PagerfantaBundle\WhiteOctoberPagerfantaBundle(),
             //new Sonata\PropelAdminBundle\SonataPropelAdminBundle(),
-            new TS\BodegaBundle\TSBodegaBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
