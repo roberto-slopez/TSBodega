@@ -31,6 +31,6 @@ TODO: mejorar tablas en el schema.xml
 
 
 <h2>Proyecto suspendido si alguien desea ayudarme puede enviarme un correo</h2>
-<i>djeldin007@msn.com</i>
+<i>roberto@tscompany.org</i>
 
-<b>PowerBy: TS (@Eldin_SLopez)</b>
+<b>PowerBy: TS (@Roberto_SLopez)</b>
